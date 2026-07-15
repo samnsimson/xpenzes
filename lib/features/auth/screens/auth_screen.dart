@@ -1,0 +1,332 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_theme.dart';
+import '../providers/auth_provider.dart';
+
+class AuthScreen extends ConsumerStatefulWidget {
+  const AuthScreen({super.key});
+
+  @override
+  ConsumerState<AuthScreen> createState() => _AuthScreenState();
+}
+
+class _AuthScreenState extends ConsumerState<AuthScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _signInEmailCtrl = TextEditingController();
+  bool _isLoading = false;
+  String? _errorMsg;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() => setState(() => _errorMsg = null));
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _signInEmailCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _signUp() async {
+    final name = _nameCtrl.text.trim();
+    final email = _emailCtrl.text.trim();
+    if (name.isEmpty || email.isEmpty) {
+      setState(() => _errorMsg = 'Please fill in all fields.');
+      return;
+    }
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+      setState(() => _errorMsg = 'Please enter a valid email address.');
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+      _errorMsg = null;
+    });
+    final success =
+        await ref.read(authProvider.notifier).signUp(name, email);
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (!success) {
+        final err = ref.read(authProvider).error;
+        setState(() => _errorMsg = err?.toString() ?? 'Failed to create account.');
+      }
+    }
+  }
+
+  Future<void> _signIn() async {
+    final email = _signInEmailCtrl.text.trim();
+    if (email.isEmpty) {
+      setState(() => _errorMsg = 'Please enter your email address.');
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+      _errorMsg = null;
+    });
+    final success =
+        await ref.read(authProvider.notifier).signIn(email);
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (!success) {
+        final err = ref.read(authProvider).error;
+        setState(() => _errorMsg = err?.toString() ?? 'Account not found.');
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 56),
+              // Logo
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primary, AppColors.primaryDark],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet_rounded,
+                  color: Colors.white,
+                  size: 36,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Xpenzes',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 34,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Track smarter. Spend wiser.',
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 40),
+              // Tab bar
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppColors.border.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  indicator: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  dividerColor: Colors.transparent,
+                  labelStyle: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600, fontSize: 14),
+                  unselectedLabelStyle: GoogleFonts.inter(
+                      fontWeight: FontWeight.w400, fontSize: 14),
+                  labelColor: AppColors.textPrimary,
+                  unselectedLabelColor: AppColors.textSecondary,
+                  tabs: const [
+                    Tab(text: 'Create Account'),
+                    Tab(text: 'Sign In'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 28),
+              // Forms
+              SizedBox(
+                height: 260,
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _SignUpForm(
+                      nameCtrl: _nameCtrl,
+                      emailCtrl: _emailCtrl,
+                      onSubmit: _signUp,
+                      isLoading: _isLoading,
+                    ),
+                    _SignInForm(
+                      emailCtrl: _signInEmailCtrl,
+                      onSubmit: _signIn,
+                      isLoading: _isLoading,
+                    ),
+                  ],
+                ),
+              ),
+              // Error message
+              if (_errorMsg != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: AppColors.error.withOpacity(0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline_rounded,
+                          color: AppColors.error, size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMsg!,
+                          style: GoogleFonts.inter(
+                              color: AppColors.error, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 32),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SignUpForm extends StatelessWidget {
+  final TextEditingController nameCtrl;
+  final TextEditingController emailCtrl;
+  final VoidCallback onSubmit;
+  final bool isLoading;
+
+  const _SignUpForm({
+    required this.nameCtrl,
+    required this.emailCtrl,
+    required this.onSubmit,
+    required this.isLoading,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: nameCtrl,
+          textCapitalization: TextCapitalization.words,
+          decoration: const InputDecoration(
+            hintText: 'Full name',
+            prefixIcon: Icon(Icons.person_outline_rounded,
+                color: AppColors.textSecondary),
+          ),
+        ),
+        const SizedBox(height: 14),
+        TextField(
+          controller: emailCtrl,
+          keyboardType: TextInputType.emailAddress,
+          decoration: const InputDecoration(
+            hintText: 'Email address',
+            prefixIcon:
+                Icon(Icons.email_outlined, color: AppColors.textSecondary),
+          ),
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          height: 52,
+          child: ElevatedButton(
+            onPressed: isLoading ? null : onSubmit,
+            child: isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2),
+                  )
+                : const Text('Get Started'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SignInForm extends StatelessWidget {
+  final TextEditingController emailCtrl;
+  final VoidCallback onSubmit;
+  final bool isLoading;
+
+  const _SignInForm({
+    required this.emailCtrl,
+    required this.onSubmit,
+    required this.isLoading,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: emailCtrl,
+          keyboardType: TextInputType.emailAddress,
+          decoration: const InputDecoration(
+            hintText: 'Email address',
+            prefixIcon:
+                Icon(Icons.email_outlined, color: AppColors.textSecondary),
+          ),
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          height: 52,
+          child: ElevatedButton(
+            onPressed: isLoading ? null : onSubmit,
+            child: isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2),
+                  )
+                : const Text('Sign In'),
+          ),
+        ),
+      ],
+    );
+  }
+}
