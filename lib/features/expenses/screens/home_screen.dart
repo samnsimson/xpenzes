@@ -70,9 +70,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final transactions = transactionsAsync.value ?? [];
     final monthTransactions = transactions.where(
-      (t) =>
-          t.date.year == _selectedMonth.year &&
-          t.date.month == _selectedMonth.month,
+      (t) => t.date.year == _selectedMonth.year && t.date.month == _selectedMonth.month,
     );
 
     final totalExpenses = monthTransactions
@@ -82,23 +80,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .where((t) => t.type == TransactionType.income)
         .fold<double>(0, (s, t) => s + t.amount);
     final balance = monthlyIncome - totalExpenses;
-    final gaugeMax = [
-      monthlyIncome,
-      totalExpenses,
-      balance.abs(),
-      1.0,
-    ].reduce((a, b) => a > b ? a : b);
+    final gaugeMax = [monthlyIncome, totalExpenses, balance.abs(), 1.0].reduce((a, b) => a > b ? a : b);
 
-    bool isFutureRecurringIncome(TransactionModel t) =>
-        t.type == TransactionType.income && t.isRecurring && t.isFuture;
+    bool isFutureRecurringIncome(TransactionModel t) => t.type == TransactionType.income && t.isRecurring && t.isFuture;
 
     // Only show transactions belonging to the selected month, grouped by
     // date label, most recent/soonest first — like a calendar month view.
     final listTransactions = hideRecurringIncome
         ? monthTransactions.where((t) => !isFutureRecurringIncome(t)).toList()
         : monthTransactions.toList();
-    final sorted = [...listTransactions]
-      ..sort((a, b) => b.date.compareTo(a.date));
+    final sorted = [...listTransactions]..sort((a, b) => b.date.compareTo(a.date));
     final grouped = _groupByDate(sorted);
 
     return Scaffold(
@@ -118,11 +109,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               duration: const Duration(milliseconds: 150),
               child: Text(
                 'Xpenzes',
-                style: GoogleFonts.plusJakartaSans(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
@@ -147,10 +134,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               children: [
                                 Text(
                                   _greeting(),
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white.withOpacity(0.8),
-                                    fontSize: 14,
-                                  ),
+                                  style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.8), fontSize: 14),
                                 ),
                                 Text(
                                   user?.name.split(' ').first ?? 'there',
@@ -167,14 +151,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               width: 44,
                               height: 44,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 shape: BoxShape.circle,
                               ),
                               child: Center(
                                 child: Text(
-                                  (user?.name.isNotEmpty == true)
-                                      ? user!.name[0].toUpperCase()
-                                      : '?',
+                                  (user?.name.isNotEmpty == true) ? user!.name[0].toUpperCase() : '?',
                                   style: GoogleFonts.plusJakartaSans(
                                     color: Colors.white,
                                     fontSize: 18,
@@ -210,9 +192,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               valueText: '$symbol${_compact(balance)}',
                               value: balance < 0 ? 0 : balance,
                               max: gaugeMax,
-                              color: balance >= 0
-                                  ? Colors.white
-                                  : AppColors.secondary,
+                              color: balance >= 0 ? Colors.white : AppColors.secondary,
                               highlight: true,
                             ),
                           ],
@@ -255,10 +235,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const Spacer(),
                   Text(
                     '${monthTransactions.length} transactions',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                    ),
+                    style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
                   ),
                 ],
               ),
@@ -268,17 +245,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // Transaction list
           transactionsAsync.when(
             loading: () => const SliverFillRemaining(
-              child: Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              ),
+              child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
             ),
             error: (e, _) => SliverFillRemaining(
-              child: Center(
-                child: Text(
-                  'Error loading transactions',
-                  style: GoogleFonts.inter(),
-                ),
-              ),
+              child: Center(child: Text('Error loading transactions', style: GoogleFonts.inter())),
             ),
             data: (allTransactions) {
               if (allTransactions.isEmpty) {
@@ -290,10 +260,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Text(
                       'No transactions in '
                       '${DateFormat('MMMM yyyy').format(_selectedMonth)}.',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                      ),
+                      style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
                     ),
                   ),
                 );
@@ -326,12 +293,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       context: context,
                       isScrollControlled: true,
                       backgroundColor: Colors.transparent,
-                      builder: (_) =>
-                          TransactionDetailSheet(transaction: transaction),
+                      builder: (_) => TransactionDetailSheet(transaction: transaction),
                     ),
-                    onDelete: () => ref
-                        .read(transactionsProvider.notifier)
-                        .deleteTransaction(transaction.id!),
+                    onDelete: () => ref.read(transactionsProvider.notifier).deleteTransaction(transaction.id!),
                   );
                 }, childCount: grouped.length),
               );
@@ -419,33 +383,19 @@ class _EmptyState extends StatelessWidget {
           Container(
             width: 80,
             height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.receipt_long_rounded,
-              size: 36,
-              color: AppColors.primary,
-            ),
+            decoration: BoxDecoration(color: AppColors.primaryLight, shape: BoxShape.circle),
+            child: const Icon(Icons.receipt_long_rounded, size: 36, color: AppColors.primary),
           ),
           const SizedBox(height: 16),
           Text(
             'No transactions yet',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
+            style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
           ),
           const SizedBox(height: 6),
           Text(
             'Tap the button below to add your\nfirst transaction.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
+            style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
           ),
         ],
       ),

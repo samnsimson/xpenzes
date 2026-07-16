@@ -4,6 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 
+/// Passwordless sign-in: enter email (+ name, first time) -> receive a
+/// one-time code -> enter the code. Supabase creates the account on
+/// first use, so there's no separate sign-up path to maintain.
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
@@ -11,39 +14,27 @@ class AuthScreen extends ConsumerStatefulWidget {
   ConsumerState<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends ConsumerState<AuthScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+enum _Step { email, code }
+
+class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
-  final _signInEmailCtrl = TextEditingController();
+  final _codeCtrl = TextEditingController();
+  _Step _step = _Step.email;
   bool _isLoading = false;
   String? _errorMsg;
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() => setState(() => _errorMsg = null));
-  }
-
-  @override
   void dispose() {
-    _tabController.dispose();
     _nameCtrl.dispose();
     _emailCtrl.dispose();
-    _signInEmailCtrl.dispose();
+    _codeCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _signUp() async {
-    final name = _nameCtrl.text.trim();
+  Future<void> _sendCode() async {
     final email = _emailCtrl.text.trim();
-    if (name.isEmpty || email.isEmpty) {
-      setState(() => _errorMsg = 'Please fill in all fields.');
-      return;
-    }
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+    if (email.isEmpty || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
       setState(() => _errorMsg = 'Please enter a valid email address.');
       return;
     }
@@ -51,36 +42,38 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       _isLoading = true;
       _errorMsg = null;
     });
-    final success =
-        await ref.read(authProvider.notifier).signUp(name, email);
-    if (mounted) {
-      setState(() => _isLoading = false);
-      if (!success) {
-        final err = ref.read(authProvider).error;
-        setState(() => _errorMsg = err?.toString() ?? 'Failed to create account.');
+    final error = await ref
+        .read(authProvider.notifier)
+        .sendOtp(email, name: _nameCtrl.text.trim());
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
+      if (error == null) {
+        _step = _Step.code;
+      } else {
+        _errorMsg = error;
       }
-    }
+    });
   }
 
-  Future<void> _signIn() async {
-    final email = _signInEmailCtrl.text.trim();
-    if (email.isEmpty) {
-      setState(() => _errorMsg = 'Please enter your email address.');
+  Future<void> _verifyCode() async {
+    final code = _codeCtrl.text.trim();
+    if (code.isEmpty) {
+      setState(() => _errorMsg = 'Enter the code we sent you.');
       return;
     }
     setState(() {
       _isLoading = true;
       _errorMsg = null;
     });
-    final success =
-        await ref.read(authProvider.notifier).signIn(email);
-    if (mounted) {
-      setState(() => _isLoading = false);
-      if (!success) {
-        final err = ref.read(authProvider).error;
-        setState(() => _errorMsg = err?.toString() ?? 'Account not found.');
-      }
-    }
+    final error = await ref
+        .read(authProvider.notifier)
+        .verifyOtp(_emailCtrl.text.trim(), code);
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
+      if (error != null) _errorMsg = error;
+    });
   }
 
   @override
@@ -94,7 +87,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 56),
-              // Logo
               Container(
                 width: 72,
                 height: 72,
@@ -137,72 +129,34 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                 ),
               ),
               const SizedBox(height: 40),
-              // Tab bar
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: AppColors.border.withOpacity(0.4),
-                  borderRadius: BorderRadius.circular(14),
+              if (_step == _Step.email)
+                _EmailStep(
+                  nameCtrl: _nameCtrl,
+                  emailCtrl: _emailCtrl,
+                  onSubmit: _sendCode,
+                  isLoading: _isLoading,
+                )
+              else
+                _CodeStep(
+                  email: _emailCtrl.text.trim(),
+                  codeCtrl: _codeCtrl,
+                  onSubmit: _verifyCode,
+                  onChangeEmail: () => setState(() {
+                    _step = _Step.email;
+                    _errorMsg = null;
+                  }),
+                  isLoading: _isLoading,
                 ),
-                child: TabBar(
-                  controller: _tabController,
-                  indicator: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  dividerColor: Colors.transparent,
-                  labelStyle: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600, fontSize: 14),
-                  unselectedLabelStyle: GoogleFonts.inter(
-                      fontWeight: FontWeight.w400, fontSize: 14),
-                  labelColor: AppColors.textPrimary,
-                  unselectedLabelColor: AppColors.textSecondary,
-                  tabs: const [
-                    Tab(text: 'Create Account'),
-                    Tab(text: 'Sign In'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 28),
-              // Forms
-              SizedBox(
-                height: 260,
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _SignUpForm(
-                      nameCtrl: _nameCtrl,
-                      emailCtrl: _emailCtrl,
-                      onSubmit: _signUp,
-                      isLoading: _isLoading,
-                    ),
-                    _SignInForm(
-                      emailCtrl: _signInEmailCtrl,
-                      onSubmit: _signIn,
-                      isLoading: _isLoading,
-                    ),
-                  ],
-                ),
-              ),
-              // Error message
               if (_errorMsg != null) ...[
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: AppColors.error.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: AppColors.error.withOpacity(0.2)),
+                    border:
+                        Border.all(color: AppColors.error.withOpacity(0.2)),
                   ),
                   child: Row(
                     children: [
@@ -229,13 +183,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   }
 }
 
-class _SignUpForm extends StatelessWidget {
+class _EmailStep extends StatelessWidget {
   final TextEditingController nameCtrl;
   final TextEditingController emailCtrl;
   final VoidCallback onSubmit;
   final bool isLoading;
 
-  const _SignUpForm({
+  const _EmailStep({
     required this.nameCtrl,
     required this.emailCtrl,
     required this.onSubmit,
@@ -251,9 +205,9 @@ class _SignUpForm extends StatelessWidget {
           controller: nameCtrl,
           textCapitalization: TextCapitalization.words,
           decoration: const InputDecoration(
-            hintText: 'Full name',
-            prefixIcon: Icon(Icons.person_outline_rounded,
-                color: AppColors.textSecondary),
+            hintText: 'Full name (new accounts only)',
+            prefixIcon:
+                Icon(Icons.person_outline_rounded, color: AppColors.textSecondary),
           ),
         ),
         const SizedBox(height: 14),
@@ -278,7 +232,7 @@ class _SignUpForm extends StatelessWidget {
                     child: CircularProgressIndicator(
                         color: Colors.white, strokeWidth: 2),
                   )
-                : const Text('Get Started'),
+                : const Text('Continue'),
           ),
         ),
       ],
@@ -286,14 +240,18 @@ class _SignUpForm extends StatelessWidget {
   }
 }
 
-class _SignInForm extends StatelessWidget {
-  final TextEditingController emailCtrl;
+class _CodeStep extends StatelessWidget {
+  final String email;
+  final TextEditingController codeCtrl;
   final VoidCallback onSubmit;
+  final VoidCallback onChangeEmail;
   final bool isLoading;
 
-  const _SignInForm({
-    required this.emailCtrl,
+  const _CodeStep({
+    required this.email,
+    required this.codeCtrl,
     required this.onSubmit,
+    required this.onChangeEmail,
     required this.isLoading,
   });
 
@@ -302,14 +260,17 @@ class _SignInForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Text(
+          'We sent a code to $email',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 14),
         TextField(
-          controller: emailCtrl,
-          keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(
-            hintText: 'Email address',
-            prefixIcon:
-                Icon(Icons.email_outlined, color: AppColors.textSecondary),
-          ),
+          controller: codeCtrl,
+          keyboardType: TextInputType.number,
+          textAlign: TextAlign.center,
+          decoration: const InputDecoration(hintText: '6-digit code'),
         ),
         const SizedBox(height: 24),
         SizedBox(
@@ -323,8 +284,13 @@ class _SignInForm extends StatelessWidget {
                     child: CircularProgressIndicator(
                         color: Colors.white, strokeWidth: 2),
                   )
-                : const Text('Sign In'),
+                : const Text('Verify & Continue'),
           ),
+        ),
+        const SizedBox(height: 12),
+        TextButton(
+          onPressed: isLoading ? null : onChangeEmail,
+          child: const Text('Use a different email'),
         ),
       ],
     );

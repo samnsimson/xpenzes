@@ -10,6 +10,7 @@ import '../../transactions/providers/transactions_provider.dart';
 import '../../transactions/models/transaction_model.dart';
 import '../../transactions/widgets/add_transaction_sheet.dart';
 import '../../budgets/screens/budgets_screen.dart';
+import '../../spend_radar/providers/spend_radar_provider.dart';
 
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
@@ -17,7 +18,7 @@ class AccountScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).value;
-    final transactionsAsync = ref.watch(transactionsProvider);
+    final spendRadarAsync = ref.watch(spendRadarProvider);
     final hideRecurringIncome = ref.watch(hideRecurringIncomeProvider);
     final symbol = AppConstants.currencies[user?.currency ?? 'USD'] ?? '\$';
 
@@ -137,7 +138,7 @@ class AccountScreen extends ConsumerWidget {
             ),
           ),
 
-          transactionsAsync.when(
+          spendRadarAsync.when(
             loading: () => const Padding(
               padding: EdgeInsets.all(20),
               child: Center(
@@ -145,20 +146,10 @@ class AccountScreen extends ConsumerWidget {
               ),
             ),
             error: (_, __) => const SizedBox.shrink(),
-            data: (transactions) {
-              // One representative row per recurring income group (earliest date).
-              final recurringIncomes = <String, TransactionModel>{};
-              for (final t in transactions) {
-                if (t.type != TransactionType.income || !t.isRecurring)
-                  continue;
-                final key = t.recurringGroupId ?? 'income-${t.id}';
-                final current = recurringIncomes[key];
-                if (current == null || t.date.isBefore(current.date)) {
-                  recurringIncomes[key] = t;
-                }
-              }
-              final incomes = recurringIncomes.values.toList()
-                ..sort((a, b) => a.title.compareTo(b.title));
+            data: (spendRadar) {
+              final incomes = spendRadar.recurringIncome.toList()
+                ..sort((a, b) =>
+                    a.transaction.title.compareTo(b.transaction.title));
 
               if (incomes.isEmpty) {
                 return Padding(
@@ -194,7 +185,8 @@ class AccountScreen extends ConsumerWidget {
                 );
               }
               return Column(
-                children: incomes.map((income) {
+                children: incomes.map((item) {
+                  final income = item.transaction;
                   return _IncomeTile(
                     income: income,
                     symbol: symbol,
@@ -254,9 +246,7 @@ class AccountScreen extends ConsumerWidget {
             onPressed: () async {
               final name = nameCtrl.text.trim();
               if (name.isNotEmpty) {
-                await ref
-                    .read(authProvider.notifier)
-                    .updateUser(user.copyWith(name: name));
+                await ref.read(authProvider.notifier).updateProfile(name: name);
               }
               if (ctx.mounted) Navigator.pop(ctx);
             },
@@ -623,7 +613,7 @@ class _CurrencySheet extends StatelessWidget {
               onTap: () async {
                 await ref
                     .read(authProvider.notifier)
-                    .updateUser(user.copyWith(currency: e.key));
+                    .updateProfile(currency: e.key);
                 if (context.mounted) Navigator.pop(context);
               },
               contentPadding: EdgeInsets.zero,

@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 import '../models/transaction_model.dart';
-import '../utils/recurrence.dart';
-import '../../../core/database/database_helper.dart';
+import '../../../core/network/api_client.dart';
 import '../../auth/providers/auth_provider.dart';
 
 final transactionsProvider =
@@ -15,51 +13,47 @@ final transactionsProvider =
 final hideRecurringIncomeProvider = StateProvider<bool>((ref) => false);
 
 class TransactionsNotifier extends AsyncNotifier<List<TransactionModel>> {
-  static const _uuid = Uuid();
-
   @override
   Future<List<TransactionModel>> build() async {
     final user = await ref.watch(authProvider.future);
-    if (user?.id == null) return [];
-    return DatabaseHelper().getTransactionsByUserId(user!.id!);
+    if (user == null) return [];
+    final json = await apiClient.get('/transactions') as List<dynamic>;
+    return json
+        .map((e) => TransactionModel.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
+  /// Adds a transaction. If it's recurring, the server expands it into
+  /// its future occurrences and returns every created row.
   Future<void> addTransaction(TransactionModel transaction) async {
-    if (transaction.isRecurring && transaction.recurrenceFrequency != null) {
-      final groupId = _uuid.v4();
-      final occurrences = <TransactionModel>[];
-      var date = transaction.date;
-      for (var i = 0; i < kRecurringOccurrenceCount; i++) {
-        occurrences.add(transaction.copyWith(
-          date: date,
-          recurringGroupId: groupId,
-        ));
-        date = nextRecurrenceDate(date, transaction.recurrenceFrequency!);
-      }
-      final ids = await DatabaseHelper().insertTransactions(occurrences);
-      final inserted = [
-        for (var i = 0; i < occurrences.length; i++)
-          occurrences[i].copyWith(id: ids[i]),
-      ];
-      state = AsyncData([...inserted, ...?state.value]);
-    } else {
-      final id = await DatabaseHelper().insertTransaction(transaction);
-      state = AsyncData([transaction.copyWith(id: id), ...?state.value]);
-    }
+    final json = await apiClient.post(
+      '/transactions',
+      body: transaction.toCreateJson(),
+    ) as List<dynamic>;
+    final inserted =
+        json.map((e) => TransactionModel.fromJson(e as Map<String, dynamic>)).toList();
+    state = AsyncData([...inserted, ...?state.value]);
   }
 
   Future<void> updateTransaction(TransactionModel transaction) async {
-    await DatabaseHelper().updateTransaction(transaction);
+    final json = await apiClient.patch(
+      '/transactions/${transaction.id}',
+      body: {
+        'title': transaction.title,
+        'amount': transaction.amount,
+        'category': transaction.category,
+        'date': transaction.date.toIso8601String(),
+        'notes': transaction.notes,
+      },
+    ) as Map<String, dynamic>;
+    final updated = TransactionModel.fromJson(json);
     state = AsyncData(
-      state.value?.map((t) => t.id == transaction.id ? transaction : t).toList() ??
-          [],
+      state.value?.map((t) => t.id == updated.id ? updated : t).toList() ?? [],
     );
   }
 
-  Future<void> deleteTransaction(int id) async {
-    await DatabaseHelper().deleteTransaction(id);
-    state = AsyncData(
-      state.value?.where((t) => t.id != id).toList() ?? [],
-    );
+  Future<void> deleteTransaction(String id) async {
+    await apiClient.delete('/transactions/$id');
+    state = AsyncData(state.value?.where((t) => t.id != id).toList() ?? []);
   }
 }

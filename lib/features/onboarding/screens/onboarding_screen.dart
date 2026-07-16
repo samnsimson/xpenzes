@@ -59,16 +59,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     setState(() => _isCompleting = true);
 
     // Update currency
-    await ref
-        .read(authProvider.notifier)
-        .updateUser(user.copyWith(currency: ob.currency));
+    await ref.read(authProvider.notifier).updateProfile(currency: ob.currency);
 
     // Save income if provided
     final amount = double.tryParse(ob.incomeAmount);
     if (amount != null && amount > 0) {
       await ref.read(transactionsProvider.notifier).addTransaction(
             TransactionModel(
-              userId: user.id!,
               type: TransactionType.income,
               title: ob.incomeSource,
               amount: amount,
@@ -76,7 +73,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               date: DateTime.now(),
               isRecurring: true,
               recurrenceFrequency: ob.incomeFrequency,
-              createdAt: DateTime.now(),
             ),
           );
     }

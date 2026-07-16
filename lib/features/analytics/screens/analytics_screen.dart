@@ -8,12 +8,12 @@ import '../../../core/constants/app_constants.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../transactions/providers/transactions_provider.dart';
 import '../../transactions/models/transaction_model.dart';
-import '../../transactions/widgets/transaction_card.dart';
 import '../../transactions/widgets/transaction_detail_sheet.dart';
-import '../../transactions/utils/recurrence.dart';
 import '../../spend_radar/screens/spend_radar_screen.dart';
+import '../../spend_radar/providers/spend_radar_provider.dart';
 import '../../budgets/providers/budgets_provider.dart';
 import '../../budgets/screens/budgets_screen.dart';
+import '../providers/analytics_provider.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -23,47 +23,28 @@ class AnalyticsScreen extends ConsumerWidget {
     final user = ref.watch(authProvider).value;
     final transactionsAsync = ref.watch(transactionsProvider);
     final budgetsAsync = ref.watch(budgetsProvider);
+    final summary = ref.watch(analyticsSummaryProvider).value ?? AnalyticsSummary.empty;
+    final trend = ref.watch(analyticsTrendProvider).value ?? [];
+    final spendRadar = ref.watch(spendRadarProvider).value;
     final symbol = AppConstants.currencies[user?.currency ?? 'USD'] ?? '\$';
     final transactions = transactionsAsync.value ?? [];
 
     final now = DateTime.now();
-    final monthTransactions = transactions
-        .where((t) => t.date.year == now.year && t.date.month == now.month)
-        .toList();
-    final monthExpenses = monthTransactions.where(
-      (t) => t.type == TransactionType.expense,
-    );
-    final monthIncome = monthTransactions.where(
-      (t) => t.type == TransactionType.income,
-    );
-    final totalExpenses = monthExpenses.fold<double>(0, (s, t) => s + t.amount);
-    final totalIncome = monthIncome.fold<double>(0, (s, t) => s + t.amount);
-
-    final categoryTotals = <String, double>{};
-    for (final t in monthExpenses) {
-      categoryTotals.update(
-        t.category,
-        (v) => v + t.amount,
-        ifAbsent: () => t.amount,
-      );
-    }
-
-    final trend = _monthlyTrend(transactions, now);
-
-    final topExpenses = [...monthExpenses]
+    // "Top expenses" is a per-transaction top-N pick, not an aggregation
+    // endpoint — the only client-side sort left in this screen.
+    final top5 = transactions
+        .where((t) =>
+            t.type == TransactionType.expense &&
+            t.date.year == now.year &&
+            t.date.month == now.month)
+        .toList()
       ..sort((a, b) => b.amount.compareTo(a.amount));
-    final top5 = topExpenses.take(5).toList();
+    final topExpenses = top5.take(5).toList();
 
-    final recurringExpenses = dedupedRecurringGroups(
-      transactions,
-      TransactionType.expense,
-    );
-    final totalMonthlyRecurring = totalMonthlyEquivalent(recurringExpenses);
+    final totalMonthlyRecurring = spendRadar?.totalMonthlyExpense ?? 0;
 
     final budgets = budgetsAsync.value ?? [];
-    final overBudgetCount = budgets
-        .where((b) => (categoryTotals[b.category] ?? 0) >= b.monthlyLimit)
-        .length;
+    final overBudgetCount = budgets.where((b) => b.status == 'exceeded').length;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -78,8 +59,8 @@ class AnalyticsScreen extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: _FinancialHealthCard(
-                    income: totalIncome,
-                    expenses: totalExpenses,
+                    income: summary.totalIncome,
+                    expenses: summary.totalExpense,
                     symbol: symbol,
                   ),
                 ),
@@ -108,8 +89,8 @@ class AnalyticsScreen extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: _CategoryBreakdown(
-                    categoryTotals: categoryTotals,
-                    totalExpenses: totalExpenses,
+                    categoryBreakdown: summary.categoryBreakdown,
+                    totalExpenses: summary.totalExpense,
                     symbol: symbol,
                   ),
                 ),
@@ -129,7 +110,7 @@ class AnalyticsScreen extends ConsumerWidget {
                   child: _SectionTitle('Top Expenses This Month'),
                 ),
                 const SizedBox(height: 8),
-                if (top5.isEmpty)
+                if (topExpenses.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -144,11 +125,12 @@ class AnalyticsScreen extends ConsumerWidget {
                     ),
                   )
                 else
-                  ...top5.map(
-                    (t) => TransactionCard(
-                      transaction: t,
-                      currencySymbol: symbol,
-                      onTap: () => showModalBottomSheet(
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _TopExpensesChart(
+                      expenses: topExpenses,
+                      symbol: symbol,
+                      onTapExpense: (t) => showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
                         backgroundColor: Colors.transparent,
@@ -160,41 +142,6 @@ class AnalyticsScreen extends ConsumerWidget {
             ),
     );
   }
-
-  static List<_MonthTotal> _monthlyTrend(
-    List<TransactionModel> transactions,
-    DateTime now,
-  ) {
-    final months = List.generate(6, (i) {
-      final m = DateTime(now.year, now.month - (5 - i));
-      return m;
-    });
-
-    return months.map((m) {
-      final inMonth = transactions.where(
-        (t) => t.date.year == m.year && t.date.month == m.month,
-      );
-      final income = inMonth
-          .where((t) => t.type == TransactionType.income)
-          .fold<double>(0, (s, t) => s + t.amount);
-      final expense = inMonth
-          .where((t) => t.type == TransactionType.expense)
-          .fold<double>(0, (s, t) => s + t.amount);
-      return _MonthTotal(month: m, income: income, expense: expense);
-    }).toList();
-  }
-}
-
-class _MonthTotal {
-  final DateTime month;
-  final double income;
-  final double expense;
-
-  const _MonthTotal({
-    required this.month,
-    required this.income,
-    required this.expense,
-  });
 }
 
 class _SectionTitle extends StatelessWidget {
@@ -468,19 +415,19 @@ class _FinancialHealthCard extends StatelessWidget {
 }
 
 class _CategoryBreakdown extends StatelessWidget {
-  final Map<String, double> categoryTotals;
+  final List<CategoryTotal> categoryBreakdown;
   final double totalExpenses;
   final String symbol;
 
   const _CategoryBreakdown({
-    required this.categoryTotals,
+    required this.categoryBreakdown,
     required this.totalExpenses,
     required this.symbol,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (categoryTotals.isEmpty || totalExpenses <= 0) {
+    if (categoryBreakdown.isEmpty || totalExpenses <= 0) {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -500,8 +447,8 @@ class _CategoryBreakdown extends StatelessWidget {
       );
     }
 
-    final entries = categoryTotals.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+    // Server already returns this sorted descending by total.
+    final entries = categoryBreakdown;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -522,9 +469,9 @@ class _CategoryBreakdown extends StatelessWidget {
                 centerSpaceRadius: 32,
                 sections: entries.map((e) {
                   final color =
-                      AppConstants.categoryColors[e.key] ?? AppColors.primary;
+                      AppConstants.categoryColors[e.category] ?? AppColors.primary;
                   return PieChartSectionData(
-                    value: e.value,
+                    value: e.total,
                     color: color,
                     radius: 20,
                     showTitle: false,
@@ -539,8 +486,8 @@ class _CategoryBreakdown extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: entries.take(6).map((e) {
                 final color =
-                    AppConstants.categoryColors[e.key] ?? AppColors.primary;
-                final pct = (e.value / totalExpenses * 100);
+                    AppConstants.categoryColors[e.category] ?? AppColors.primary;
+                final pct = (e.total / totalExpenses * 100);
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
@@ -556,7 +503,7 @@ class _CategoryBreakdown extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          e.key,
+                          e.category,
                           style: GoogleFonts.inter(
                             fontSize: 12.5,
                             color: AppColors.textPrimary,
@@ -586,7 +533,7 @@ class _CategoryBreakdown extends StatelessWidget {
 }
 
 class _TrendChart extends StatelessWidget {
-  final List<_MonthTotal> trend;
+  final List<MonthTotal> trend;
   final String symbol;
 
   const _TrendChart({required this.trend, required this.symbol});
@@ -631,7 +578,7 @@ class _TrendChart extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(
-                      DateFormat('MMM').format(trend[i].month),
+                      DateFormat('MMM').format(trend[i].date),
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         color: AppColors.textSecondary,
@@ -663,6 +610,126 @@ class _TrendChart extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _TopExpensesChart extends StatelessWidget {
+  final List<TransactionModel> expenses;
+  final String symbol;
+  final ValueChanged<TransactionModel> onTapExpense;
+
+  const _TopExpensesChart({
+    required this.expenses,
+    required this.symbol,
+    required this.onTapExpense,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final maxAmount = expenses.fold<double>(0, (m, t) => t.amount > m ? t.amount : m);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < expenses.length; i++) ...[
+            if (i > 0) const SizedBox(height: 18),
+            _ExpenseBarRow(
+              transaction: expenses[i],
+              maxAmount: maxAmount,
+              symbol: symbol,
+              onTap: () => onTapExpense(expenses[i]),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ExpenseBarRow extends StatelessWidget {
+  final TransactionModel transaction;
+  final double maxAmount;
+  final String symbol;
+  final VoidCallback onTap;
+
+  const _ExpenseBarRow({
+    required this.transaction,
+    required this.maxAmount,
+    required this.symbol,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color =
+        AppConstants.categoryColors[transaction.category] ?? AppColors.primary;
+    final fraction =
+        maxAmount <= 0 ? 0.0 : (transaction.amount / maxAmount).clamp(0.0, 1.0);
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  transaction.title,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '$symbol${transaction.amount.toStringAsFixed(2)}',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            transaction.category,
+            style: GoogleFonts.inter(
+              fontSize: 11.5,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: fraction),
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, _) => LinearProgressIndicator(
+                value: value,
+                minHeight: 10,
+                backgroundColor: AppColors.border,
+                color: color,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

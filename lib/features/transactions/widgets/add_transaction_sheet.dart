@@ -96,14 +96,10 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       return;
     }
 
-    final user = ref.read(authProvider).value;
-    if (user?.id == null) return;
-
     setState(() => _isSaving = true);
 
     final transaction = TransactionModel(
       id: widget.existing?.id,
-      userId: user!.id!,
       type: _type,
       title: title,
       amount: amount,
@@ -113,7 +109,6 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       isRecurring: _isRecurring,
       recurrenceFrequency: _isRecurring ? _frequency : null,
       recurringGroupId: widget.existing?.recurringGroupId,
-      createdAt: widget.existing?.createdAt ?? DateTime.now(),
     );
 
     if (_isEditing) {

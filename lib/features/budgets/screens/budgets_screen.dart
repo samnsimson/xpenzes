@@ -4,8 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../transactions/providers/transactions_provider.dart';
-import '../../transactions/models/transaction_model.dart';
 import '../models/budget_model.dart';
 import '../providers/budgets_provider.dart';
 
@@ -15,27 +13,8 @@ class BudgetsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).value;
-    final transactionsAsync = ref.watch(transactionsProvider);
     final budgetsAsync = ref.watch(budgetsProvider);
     final symbol = AppConstants.currencies[user?.currency ?? 'USD'] ?? '\$';
-
-    final now = DateTime.now();
-    final transactions = transactionsAsync.value ?? [];
-    final monthExpenses = transactions.where(
-      (t) =>
-          t.type == TransactionType.expense &&
-          t.date.year == now.year &&
-          t.date.month == now.month,
-    );
-
-    final spentByCategory = <String, double>{};
-    for (final t in monthExpenses) {
-      spentByCategory.update(
-        t.category,
-        (v) => v + t.amount,
-        ifAbsent: () => t.amount,
-      );
-    }
 
     final budgets = budgetsAsync.value ?? [];
     final budgetByCategory = {for (final b in budgets) b.category: b};
@@ -56,15 +35,13 @@ class BudgetsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           ...AppConstants.expenseCategories.map((category) {
-            final spent = spentByCategory[category] ?? 0;
             final budget = budgetByCategory[category];
             return _BudgetRow(
               category: category,
-              spent: spent,
+              spent: budget?.spent ?? 0,
               budget: budget,
               symbol: symbol,
-              onTap: () =>
-                  _showEditSheet(context, user?.id, category, budget, symbol),
+              onTap: () => _showEditSheet(context, category, budget, symbol),
             );
           }),
         ],
@@ -74,18 +51,15 @@ class BudgetsScreen extends ConsumerWidget {
 
   void _showEditSheet(
     BuildContext context,
-    int? userId,
     String category,
     BudgetModel? existing,
     String symbol,
   ) {
-    if (userId == null) return;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _BudgetEditSheet(
-        userId: userId,
         category: category,
         existing: existing,
         symbol: symbol,
@@ -213,13 +187,11 @@ class _BudgetRow extends StatelessWidget {
 // ── Budget edit bottom sheet ──────────────────────────────────────────────────
 
 class _BudgetEditSheet extends ConsumerStatefulWidget {
-  final int userId;
   final String category;
   final BudgetModel? existing;
   final String symbol;
 
   const _BudgetEditSheet({
-    required this.userId,
     required this.category,
     required this.existing,
     required this.symbol,
@@ -234,6 +206,7 @@ class _BudgetEditSheetState extends ConsumerState<_BudgetEditSheet> {
 
   late double _amount;
   late final TextEditingController _amountCtrl;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -267,25 +240,18 @@ class _BudgetEditSheetState extends ConsumerState<_BudgetEditSheet> {
     }
   }
 
-  void _save() {
-    if (_amount <= 0) return;
-    ref
-        .read(budgetsProvider.notifier)
-        .setBudget(
-          BudgetModel(
-            id: widget.existing?.id,
-            userId: widget.userId,
-            category: widget.category,
-            monthlyLimit: _amount,
-            createdAt: widget.existing?.createdAt ?? DateTime.now(),
-          ),
-        );
-    Navigator.pop(context);
+  Future<void> _save() async {
+    if (_amount <= 0 || _isSaving) return;
+    setState(() => _isSaving = true);
+    await ref.read(budgetsProvider.notifier).setBudget(widget.category, _amount);
+    if (mounted) Navigator.pop(context);
   }
 
-  void _remove() {
-    ref.read(budgetsProvider.notifier).deleteBudget(widget.existing!.id!);
-    Navigator.pop(context);
+  Future<void> _remove() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+    await ref.read(budgetsProvider.notifier).deleteBudget(widget.existing!.id);
+    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -396,8 +362,15 @@ class _BudgetEditSheetState extends ConsumerState<_BudgetEditSheet> {
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
-                onPressed: _save,
-                child: const Text('Save Budget'),
+                onPressed: _isSaving ? null : _save,
+                child: _isSaving
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2),
+                      )
+                    : const Text('Save Budget'),
               ),
             ),
             if (widget.existing != null) ...[
@@ -405,7 +378,7 @@ class _BudgetEditSheetState extends ConsumerState<_BudgetEditSheet> {
               SizedBox(
                 width: double.infinity,
                 child: TextButton(
-                  onPressed: _remove,
+                  onPressed: _isSaving ? null : _remove,
                   child: Text(
                     'Remove Budget',
                     style: GoogleFonts.inter(color: AppColors.error),

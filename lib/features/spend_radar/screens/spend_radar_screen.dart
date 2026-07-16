@@ -4,10 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../transactions/providers/transactions_provider.dart';
 import '../../transactions/models/transaction_model.dart';
-import '../../transactions/utils/recurrence.dart';
 import '../../transactions/widgets/transaction_detail_sheet.dart';
+import '../providers/spend_radar_provider.dart';
 
 class SpendRadarScreen extends ConsumerWidget {
   const SpendRadarScreen({super.key});
@@ -15,21 +14,11 @@ class SpendRadarScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).value;
-    final transactionsAsync = ref.watch(transactionsProvider);
     final symbol = AppConstants.currencies[user?.currency ?? 'USD'] ?? '\$';
-    final transactions = transactionsAsync.value ?? [];
+    final data = ref.watch(spendRadarProvider).value;
 
-    final recurringExpenses = dedupedRecurringGroups(
-      transactions,
-      TransactionType.expense,
-    );
-    final recurringIncome = dedupedRecurringGroups(
-      transactions,
-      TransactionType.income,
-    );
-
-    final totalMonthlyExpense = totalMonthlyEquivalent(recurringExpenses);
-    final totalMonthlyIncome = totalMonthlyEquivalent(recurringIncome);
+    final recurringExpenses = data?.recurringExpenses ?? [];
+    final recurringIncome = data?.recurringIncome ?? [];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -40,8 +29,8 @@ class SpendRadarScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               children: [
                 _SummaryCard(
-                  totalMonthlyExpense: totalMonthlyExpense,
-                  totalMonthlyIncome: totalMonthlyIncome,
+                  totalMonthlyExpense: data?.totalMonthlyExpense ?? 0,
+                  totalMonthlyIncome: data?.totalMonthlyIncome ?? 0,
                   symbol: symbol,
                 ),
                 if (recurringExpenses.isNotEmpty) ...[
@@ -49,7 +38,7 @@ class SpendRadarScreen extends ConsumerWidget {
                   _SectionTitle('Recurring Expenses'),
                   const SizedBox(height: 10),
                   ...recurringExpenses.map(
-                    (t) => _RecurringItemTile(transaction: t, symbol: symbol),
+                    (item) => _RecurringItemTile(item: item, symbol: symbol),
                   ),
                 ],
                 if (recurringIncome.isNotEmpty) ...[
@@ -57,7 +46,7 @@ class SpendRadarScreen extends ConsumerWidget {
                   _SectionTitle('Recurring Income'),
                   const SizedBox(height: 10),
                   ...recurringIncome.map(
-                    (t) => _RecurringItemTile(transaction: t, symbol: symbol),
+                    (item) => _RecurringItemTile(item: item, symbol: symbol),
                   ),
                 ],
               ],
@@ -161,10 +150,12 @@ class _SummaryCard extends StatelessWidget {
 }
 
 class _RecurringItemTile extends StatelessWidget {
-  final TransactionModel transaction;
+  final RecurringItem item;
   final String symbol;
 
-  const _RecurringItemTile({required this.transaction, required this.symbol});
+  const _RecurringItemTile({required this.item, required this.symbol});
+
+  TransactionModel get transaction => item.transaction;
 
   bool get _isIncome => transaction.type == TransactionType.income;
 
@@ -180,10 +171,7 @@ class _RecurringItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final frequency = transaction.recurrenceFrequency!;
-    final monthlyEquivalent = monthlyEquivalentAmount(
-      transaction.amount,
-      frequency,
-    );
+    final monthlyEquivalent = item.monthlyEquivalent;
     final isAlreadyMonthly = frequency == 'Monthly';
 
     return Container(

@@ -8,8 +8,7 @@ extension TransactionTypeX on TransactionType {
 }
 
 class TransactionModel {
-  final int? id;
-  final int userId;
+  final String? id;
   final TransactionType type;
   final String title;
   final double amount;
@@ -19,11 +18,10 @@ class TransactionModel {
   final bool isRecurring;
   final String? recurrenceFrequency;
   final String? recurringGroupId;
-  final DateTime createdAt;
+  final DateTime? createdAt;
 
   const TransactionModel({
     this.id,
-    required this.userId,
     required this.type,
     required this.title,
     required this.amount,
@@ -33,45 +31,40 @@ class TransactionModel {
     this.isRecurring = false,
     this.recurrenceFrequency,
     this.recurringGroupId,
-    required this.createdAt,
+    this.createdAt,
   });
 
   bool get isFuture => date.isAfter(DateTime.now());
 
-  Map<String, dynamic> toMap() => {
-        if (id != null) 'id': id,
-        'user_id': userId,
+  factory TransactionModel.fromJson(Map<String, dynamic> json) =>
+      TransactionModel(
+        id: json['id'] as String,
+        type: TransactionTypeX.fromValue(json['type'] as String),
+        title: json['title'] as String,
+        amount: (json['amount'] as num).toDouble(),
+        category: json['category'] as String,
+        date: DateTime.parse(json['date'] as String),
+        notes: json['notes'] as String?,
+        isRecurring: json['is_recurring'] as bool? ?? false,
+        recurrenceFrequency: json['recurrence_frequency'] as String?,
+        recurringGroupId: json['recurring_group_id'] as String?,
+        createdAt: DateTime.parse(json['created_at'] as String),
+      );
+
+  /// Body for `POST /transactions` — server assigns id/createdAt/group id.
+  Map<String, dynamic> toCreateJson() => {
         'type': type.value,
         'title': title,
         'amount': amount,
         'category': category,
         'date': date.toIso8601String(),
         'notes': notes,
-        'is_recurring': isRecurring ? 1 : 0,
+        'is_recurring': isRecurring,
         'recurrence_frequency': recurrenceFrequency,
-        'recurring_group_id': recurringGroupId,
-        'created_at': createdAt.toIso8601String(),
       };
 
-  factory TransactionModel.fromMap(Map<String, dynamic> map) =>
-      TransactionModel(
-        id: map['id'] as int?,
-        userId: map['user_id'] as int,
-        type: TransactionTypeX.fromValue(map['type'] as String),
-        title: map['title'] as String,
-        amount: (map['amount'] as num).toDouble(),
-        category: map['category'] as String,
-        date: DateTime.parse(map['date'] as String),
-        notes: map['notes'] as String?,
-        isRecurring: (map['is_recurring'] as int? ?? 0) == 1,
-        recurrenceFrequency: map['recurrence_frequency'] as String?,
-        recurringGroupId: map['recurring_group_id'] as String?,
-        createdAt: DateTime.parse(map['created_at'] as String),
-      );
-
   TransactionModel copyWith({
-    int? id,
-    int? userId,
+    String? id,
     TransactionType? type,
     String? title,
     double? amount,
@@ -85,7 +78,6 @@ class TransactionModel {
   }) =>
       TransactionModel(
         id: id ?? this.id,
-        userId: userId ?? this.userId,
         type: type ?? this.type,
         title: title ?? this.title,
         amount: amount ?? this.amount,

@@ -20,7 +20,7 @@ class XpenzesApp extends ConsumerWidget {
           .watch(authProvider)
           .when(
             loading: () => const _SplashScreen(),
-            error: (_, __) => const AuthScreen(),
+            error: (_, _) => const AuthScreen(),
             data: (user) {
               if (user == null) return const AuthScreen();
               if (!user.isOnboarded) return const OnboardingScreen();
@@ -46,32 +46,18 @@ class _SplashScreen extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(24),
               ),
-              child: const Icon(
-                Icons.account_balance_wallet_rounded,
-                color: Colors.white,
-                size: 40,
-              ),
+              child: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white, size: 40),
             ),
             const SizedBox(height: 16),
             Text(
               'Xpenzes',
-              style: GoogleFonts.plusJakartaSans(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.w800,
-              ),
+              style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Loading...',
-              style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.7),
-                fontSize: 14,
-              ),
-            ),
+            Text('Loading...', style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.7), fontSize: 14)),
           ],
         ),
       ),

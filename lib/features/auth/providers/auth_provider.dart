@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_model.dart';
-import '../../../core/database/database_helper.dart';
+import '../../../core/network/api_client.dart';
 
 final authProvider = AsyncNotifierProvider<AuthNotifier, UserModel?>(
   AuthNotifier.new,
@@ -9,63 +10,72 @@ final authProvider = AsyncNotifierProvider<AuthNotifier, UserModel?>(
 class AuthNotifier extends AsyncNotifier<UserModel?> {
   @override
   Future<UserModel?> build() async {
-    return DatabaseHelper().getLastUser();
+    if (Supabase.instance.client.auth.currentSession == null) return null;
+    return _fetchProfile();
   }
 
-  Future<bool> signUp(String name, String email) async {
-    state = const AsyncLoading();
+  Future<UserModel> _fetchProfile() async {
+    final json = await apiClient.get('/users/me') as Map<String, dynamic>;
+    return UserModel.fromJson(json);
+  }
+
+  /// Sends a one-time login code to [email]. Works for both new and
+  /// returning users — Supabase creates the account on first use.
+  ///
+  /// Deliberately does not touch `state`: no session exists yet, and
+  /// `state` drives top-level app routing (splash vs. auth vs. app) —
+  /// flipping it to loading here would unmount AuthScreen mid-flow and
+  /// lose which step the user is on. Returns an error message, or null
+  /// on success.
+  Future<String?> sendOtp(String email, {String? name}) async {
     try {
-      final existing = await DatabaseHelper().getUserByEmail(email);
-      if (existing != null) {
-        state = AsyncError('An account with this email already exists.', StackTrace.current);
-        return false;
-      }
-      final user = UserModel(
-        name: name,
+      await Supabase.instance.client.auth.signInWithOtp(
         email: email,
-        currency: 'USD',
-        isOnboarded: false,
-        createdAt: DateTime.now(),
+        data: name != null && name.isNotEmpty ? {'name': name} : null,
       );
-      final id = await DatabaseHelper().insertUser(user);
-      state = AsyncData(user.copyWith(id: id));
-      return true;
-    } catch (e, st) {
-      state = AsyncError(e, st);
-      return false;
+      return null;
+    } catch (e) {
+      return e.toString();
     }
   }
 
-  Future<bool> signIn(String email) async {
-    state = const AsyncLoading();
+  /// Verifies the code. Like [sendOtp], avoids touching `state` on
+  /// failure (a wrong code shouldn't unmount AuthScreen and bounce the
+  /// user back to the email step) — only a real success updates it,
+  /// which is also the only case where leaving AuthScreen is correct.
+  Future<String?> verifyOtp(String email, String code) async {
     try {
-      final user = await DatabaseHelper().getUserByEmail(email);
-      if (user == null) {
-        state = AsyncError('No account found with this email.', StackTrace.current);
-        return false;
-      }
-      state = AsyncData(user);
-      return true;
-    } catch (e, st) {
-      state = AsyncError(e, st);
-      return false;
+      await Supabase.instance.client.auth.verifyOTP(
+        type: OtpType.email,
+        email: email,
+        token: code,
+      );
+      state = AsyncData(await _fetchProfile());
+      return null;
+    } catch (e) {
+      return e.toString();
     }
   }
 
-  Future<void> updateUser(UserModel user) async {
-    await DatabaseHelper().updateUser(user);
-    state = AsyncData(user);
+  Future<void> updateProfile({String? name, String? currency}) async {
+    final json = await apiClient.patch(
+      '/users/me',
+      body: {
+        if (name != null) 'name': name,
+        if (currency != null) 'currency': currency,
+      },
+    ) as Map<String, dynamic>;
+    state = AsyncData(UserModel.fromJson(json));
   }
 
   Future<void> completeOnboarding() async {
-    final user = state.value;
-    if (user == null) return;
-    final updated = user.copyWith(isOnboarded: true);
-    await DatabaseHelper().updateUser(updated);
-    state = AsyncData(updated);
+    final json =
+        await apiClient.post('/users/me/onboarding/complete') as Map<String, dynamic>;
+    state = AsyncData(UserModel.fromJson(json));
   }
 
-  void signOut() {
+  Future<void> signOut() async {
+    await Supabase.instance.client.auth.signOut();
     state = const AsyncData(null);
   }
 }

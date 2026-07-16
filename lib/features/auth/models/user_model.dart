@@ -1,52 +1,47 @@
 class UserModel {
-  final int? id;
+  final String id;
   final String name;
   final String email;
   final String currency;
   final bool isOnboarded;
+  final String subscriptionPlan;
   final DateTime createdAt;
 
   const UserModel({
-    this.id,
+    required this.id,
     required this.name,
     required this.email,
     required this.currency,
     required this.isOnboarded,
+    required this.subscriptionPlan,
     required this.createdAt,
   });
 
-  Map<String, dynamic> toMap() => {
-        if (id != null) 'id': id,
-        'name': name,
-        'email': email,
-        'currency': currency,
-        'is_onboarded': isOnboarded ? 1 : 0,
-        'created_at': createdAt.toIso8601String(),
-      };
+  bool get isPro => subscriptionPlan == 'pro';
 
-  factory UserModel.fromMap(Map<String, dynamic> map) => UserModel(
-        id: map['id'] as int?,
-        name: map['name'] as String,
-        email: map['email'] as String,
-        currency: (map['currency'] as String?) ?? 'USD',
-        isOnboarded: ((map['is_onboarded'] as int?) ?? 0) == 1,
-        createdAt: DateTime.parse(map['created_at'] as String),
+  factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        email: json['email'] as String,
+        currency: json['currency'] as String,
+        isOnboarded: json['is_onboarded'] as bool,
+        subscriptionPlan: json['subscription_plan'] as String,
+        createdAt: DateTime.parse(json['created_at'] as String),
       );
 
   UserModel copyWith({
-    int? id,
     String? name,
-    String? email,
     String? currency,
     bool? isOnboarded,
-    DateTime? createdAt,
+    String? subscriptionPlan,
   }) =>
       UserModel(
-        id: id ?? this.id,
+        id: id,
         name: name ?? this.name,
-        email: email ?? this.email,
+        email: email,
         currency: currency ?? this.currency,
         isOnboarded: isOnboarded ?? this.isOnboarded,
-        createdAt: createdAt ?? this.createdAt,
+        subscriptionPlan: subscriptionPlan ?? this.subscriptionPlan,
+        createdAt: createdAt,
       );
 }
