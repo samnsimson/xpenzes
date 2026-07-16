@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../features/auth/models/user_model.dart';
 import '../../features/transactions/models/transaction_model.dart';
 import '../../features/transactions/utils/recurrence.dart';
+import '../../features/budgets/models/budget_model.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -21,7 +22,7 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'xpenzes.db');
     return openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -40,6 +41,21 @@ class DatabaseHelper {
     ''');
 
     await _createTransactionsTable(db);
+    await _createBudgetsTable(db);
+  }
+
+  Future<void> _createBudgetsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE budgets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        category TEXT NOT NULL,
+        monthly_limit REAL NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE(user_id, category)
+      )
+    ''');
   }
 
   Future<void> _createTransactionsTable(Database db) async {
@@ -93,6 +109,9 @@ class DatabaseHelper {
 
       await _createTransactionsTable(db);
       await _migrateLegacyDataToTransactions(db);
+    }
+    if (oldVersion < 3) {
+      await _createBudgetsTable(db);
     }
   }
 
@@ -171,28 +190,38 @@ class DatabaseHelper {
 
   Future<int> insertUser(UserModel user) async {
     final db = await database;
-    return db.insert('users', user.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    return db.insert(
+      'users',
+      user.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<UserModel?> getUserByEmail(String email) async {
     final db = await database;
-    final rows =
-        await db.query('users', where: 'email = ?', whereArgs: [email], limit: 1);
+    final rows = await db.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: [email],
+      limit: 1,
+    );
     return rows.isEmpty ? null : UserModel.fromMap(rows.first);
   }
 
   Future<UserModel?> getLastUser() async {
     final db = await database;
-    final rows =
-        await db.query('users', orderBy: 'created_at DESC', limit: 1);
+    final rows = await db.query('users', orderBy: 'created_at DESC', limit: 1);
     return rows.isEmpty ? null : UserModel.fromMap(rows.first);
   }
 
   Future<void> updateUser(UserModel user) async {
     final db = await database;
-    await db.update('users', user.toMap(),
-        where: 'id = ?', whereArgs: [user.id]);
+    await db.update(
+      'users',
+      user.toMap(),
+      where: 'id = ?',
+      whereArgs: [user.id],
+    );
   }
 
   // ── Transactions ────────────────────────────────────────────────────────────
@@ -203,7 +232,8 @@ class DatabaseHelper {
   }
 
   Future<List<int>> insertTransactions(
-      List<TransactionModel> transactions) async {
+    List<TransactionModel> transactions,
+  ) async {
     final db = await database;
     final ids = <int>[];
     await db.transaction((txn) async {
@@ -216,19 +246,53 @@ class DatabaseHelper {
 
   Future<List<TransactionModel>> getTransactionsByUserId(int userId) async {
     final db = await database;
-    final rows = await db.query('transactions',
-        where: 'user_id = ?', whereArgs: [userId], orderBy: 'date DESC');
+    final rows = await db.query(
+      'transactions',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+      orderBy: 'date DESC',
+    );
     return rows.map(TransactionModel.fromMap).toList();
   }
 
   Future<void> updateTransaction(TransactionModel transaction) async {
     final db = await database;
-    await db.update('transactions', transaction.toMap(),
-        where: 'id = ?', whereArgs: [transaction.id]);
+    await db.update(
+      'transactions',
+      transaction.toMap(),
+      where: 'id = ?',
+      whereArgs: [transaction.id],
+    );
   }
 
   Future<void> deleteTransaction(int id) async {
     final db = await database;
     await db.delete('transactions', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ── Budgets ─────────────────────────────────────────────────────────────────
+
+  Future<void> upsertBudget(BudgetModel budget) async {
+    final db = await database;
+    await db.insert(
+      'budgets',
+      budget.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<BudgetModel>> getBudgetsByUserId(int userId) async {
+    final db = await database;
+    final rows = await db.query(
+      'budgets',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
+    return rows.map(BudgetModel.fromMap).toList();
+  }
+
+  Future<void> deleteBudget(int id) async {
+    final db = await database;
+    await db.delete('budgets', where: 'id = ?', whereArgs: [id]);
   }
 }

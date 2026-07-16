@@ -16,7 +16,9 @@ class XpenzesApp extends ConsumerWidget {
       title: 'Xpenzes',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: ref.watch(authProvider).when(
+      home: ref
+          .watch(authProvider)
+          .when(
             loading: () => const _SplashScreen(),
             error: (_, __) => const AuthScreen(),
             data: (user) {

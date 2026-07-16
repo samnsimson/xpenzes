@@ -10,6 +10,10 @@ import '../../transactions/providers/transactions_provider.dart';
 import '../../transactions/models/transaction_model.dart';
 import '../../transactions/widgets/transaction_card.dart';
 import '../../transactions/widgets/transaction_detail_sheet.dart';
+import '../../transactions/utils/recurrence.dart';
+import '../../spend_radar/screens/spend_radar_screen.dart';
+import '../../budgets/providers/budgets_provider.dart';
+import '../../budgets/screens/budgets_screen.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -18,6 +22,7 @@ class AnalyticsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).value;
     final transactionsAsync = ref.watch(transactionsProvider);
+    final budgetsAsync = ref.watch(budgetsProvider);
     final symbol = AppConstants.currencies[user?.currency ?? 'USD'] ?? '\$';
     final transactions = transactionsAsync.value ?? [];
 
@@ -49,6 +54,17 @@ class AnalyticsScreen extends ConsumerWidget {
       ..sort((a, b) => b.amount.compareTo(a.amount));
     final top5 = topExpenses.take(5).toList();
 
+    final recurringExpenses = dedupedRecurringGroups(
+      transactions,
+      TransactionType.expense,
+    );
+    final totalMonthlyRecurring = totalMonthlyEquivalent(recurringExpenses);
+
+    final budgets = budgetsAsync.value ?? [];
+    final overBudgetCount = budgets
+        .where((b) => (categoryTotals[b.category] ?? 0) >= b.monthlyLimit)
+        .length;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Analytics')),
@@ -65,6 +81,22 @@ class AnalyticsScreen extends ConsumerWidget {
                     income: totalIncome,
                     expenses: totalExpenses,
                     symbol: symbol,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _SpendRadarCard(
+                    totalMonthlyRecurring: totalMonthlyRecurring,
+                    symbol: symbol,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _BudgetAlertsCard(
+                    budgetCount: budgets.length,
+                    overBudgetCount: overBudgetCount,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -177,6 +209,172 @@ class _SectionTitle extends StatelessWidget {
         fontSize: 16,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
+      ),
+    );
+  }
+}
+
+class _SpendRadarCard extends StatelessWidget {
+  final double totalMonthlyRecurring;
+  final String symbol;
+
+  const _SpendRadarCard({
+    required this.totalMonthlyRecurring,
+    required this.symbol,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const SpendRadarScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(
+                Icons.radar_rounded,
+                color: AppColors.primary,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Spend Radar',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    totalMonthlyRecurring > 0
+                        ? '$symbol${totalMonthlyRecurring.toStringAsFixed(2)}/mo recurring'
+                        : 'No recurring spend yet',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.textSecondary,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BudgetAlertsCard extends StatelessWidget {
+  final int budgetCount;
+  final int overBudgetCount;
+
+  const _BudgetAlertsCard({
+    required this.budgetCount,
+    required this.overBudgetCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    late final String status;
+    late final Color color;
+    late final IconData icon;
+    if (budgetCount == 0) {
+      status = 'No budgets set';
+      color = AppColors.textSecondary;
+      icon = Icons.pie_chart_outline_rounded;
+    } else if (overBudgetCount > 0) {
+      status =
+          '$overBudgetCount ${overBudgetCount == 1 ? 'category' : 'categories'} over budget';
+      color = AppColors.error;
+      icon = Icons.warning_amber_rounded;
+    } else {
+      status = 'All budgets on track';
+      color = AppColors.success;
+      icon = Icons.check_circle_outline_rounded;
+    }
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const BudgetsScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Budget Alerts',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    status,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.textSecondary,
+              size: 20,
+            ),
+          ],
+        ),
       ),
     );
   }

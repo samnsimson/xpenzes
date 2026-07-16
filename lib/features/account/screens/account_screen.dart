@@ -9,6 +9,7 @@ import '../../auth/models/user_model.dart';
 import '../../transactions/providers/transactions_provider.dart';
 import '../../transactions/models/transaction_model.dart';
 import '../../transactions/widgets/add_transaction_sheet.dart';
+import '../../budgets/screens/budgets_screen.dart';
 
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
@@ -17,6 +18,7 @@ class AccountScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).value;
     final transactionsAsync = ref.watch(transactionsProvider);
+    final hideRecurringIncome = ref.watch(hideRecurringIncomeProvider);
     final symbol = AppConstants.currencies[user?.currency ?? 'USD'] ?? '\$';
 
     return Scaffold(
@@ -95,8 +97,8 @@ class AccountScreen extends ConsumerWidget {
             ),
           ),
 
-          // Currency setting
-          _SectionHeader(title: 'Preferences'),
+          // App & finance settings
+          _SectionHeader(title: 'Settings'),
           _SettingTile(
             icon: Icons.currency_exchange_rounded,
             iconColor: AppColors.warning,
@@ -104,6 +106,23 @@ class AccountScreen extends ConsumerWidget {
             subtitle:
                 '${user?.currency ?? 'USD'} (${AppConstants.currencies[user?.currency ?? 'USD'] ?? '\$'})',
             onTap: () => _editCurrency(context, ref, user),
+          ),
+          _SettingSwitchTile(
+            icon: Icons.visibility_off_rounded,
+            iconColor: AppColors.primary,
+            title: 'Hide Future Recurring Income',
+            value: hideRecurringIncome,
+            onChanged: (v) =>
+                ref.read(hideRecurringIncomeProvider.notifier).state = v,
+          ),
+          _SettingTile(
+            icon: Icons.pie_chart_rounded,
+            iconColor: AppColors.success,
+            title: 'Manage Budgets',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const BudgetsScreen()),
+            ),
           ),
 
           const SizedBox(height: 8),
@@ -411,6 +430,63 @@ class _SettingTile extends StatelessWidget {
             Icons.chevron_right_rounded,
             color: AppColors.textSecondary.withOpacity(0.5),
             size: 20,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingSwitchTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _SettingSwitchTile({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
+          leading: Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          title: Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          trailing: Switch(
+            value: value,
+            activeThumbColor: AppColors.primary,
+            onChanged: onChanged,
           ),
         ),
       ),
