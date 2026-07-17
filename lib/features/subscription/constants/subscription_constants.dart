@@ -5,9 +5,6 @@ class SubscriptionConstants {
   static const String yearlyPrice = '\$39.99';
   static const String yearlySavingsLabel = 'Save 33%';
 
-  // TODO: replace with a real Stripe Checkout Session URL from your backend.
-  static const String checkoutUrlPlaceholder = 'https://xpenzes.app/upgrade';
-
   static const List<String> features = [
     'Cloud backup & sync across devices',
     'Unlimited transaction history',

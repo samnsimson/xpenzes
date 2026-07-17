@@ -20,4 +20,13 @@ class Env {
     'API_BASE_URL',
     defaultValue: 'http://localhost:8000',
   );
+
+  /// Where the in-app browser is sent for Stripe checkout (see
+  /// features/subscription). Points at a local xpenzes-web by default,
+  /// matching [apiBaseUrl]; pass
+  /// --dart-define=WEB_BASE_URL=https://xpenzes.app for staging/prod.
+  static const webBaseUrl = String.fromEnvironment(
+    'WEB_BASE_URL',
+    defaultValue: 'http://localhost:3000',
+  );
 }

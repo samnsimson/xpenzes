@@ -25,9 +25,9 @@ class ApiClient {
 
   Uri _uri(String path, [Map<String, dynamic>? query]) {
     final normalized = path.startsWith('/') ? path : '/$path';
-    return Uri.parse('${Env.apiBaseUrl}$normalized').replace(
-      queryParameters: query?.map((k, v) => MapEntry(k, v.toString())),
-    );
+    return Uri.parse(
+      '${Env.apiBaseUrl}$normalized',
+    ).replace(queryParameters: query?.map((k, v) => MapEntry(k, v.toString())));
   }
 
   Map<String, String> get _headers {
