@@ -2,10 +2,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_model.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/constants/app_constants.dart';
 
 final authProvider = AsyncNotifierProvider<AuthNotifier, UserModel?>(
   AuthNotifier.new,
 );
+
+/// The current user's currency symbol (e.g. `$`, `€`), falling back to
+/// USD before sign-in or if the stored currency code is unrecognized.
+final currencySymbolProvider = Provider<String>((ref) {
+  final currency = ref.watch(authProvider).value?.currency ?? 'USD';
+  return AppConstants.currencies[currency] ?? '\$';
+});
 
 enum _OtpProbeOutcome { existingUser, newUser, error }
 
