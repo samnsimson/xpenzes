@@ -1,6 +1,4 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config/env.dart';
@@ -19,68 +17,87 @@ class ApiException implements Exception {
 /// Supabase session's access token as a bearer token — the API resolves
 /// the caller from that token, never from a client-supplied user id.
 class ApiClient {
-  final http.Client _client;
+  final Dio _dio;
 
-  ApiClient({http.Client? client}) : _client = client ?? http.Client();
-
-  Uri _uri(String path, [Map<String, dynamic>? query]) {
-    final normalized = path.startsWith('/') ? path : '/$path';
-    return Uri.parse(
-      '${Env.apiBaseUrl}$normalized',
-    ).replace(queryParameters: query?.map((k, v) => MapEntry(k, v.toString())));
+  ApiClient({Dio? dio})
+    : _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              baseUrl: Env.apiBaseUrl,
+              contentType: 'application/json',
+            ),
+          ) {
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          final token =
+              Supabase.instance.client.auth.currentSession?.accessToken;
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          handler.next(options);
+        },
+      ),
+    );
   }
 
-  Map<String, String> get _headers {
-    final token = Supabase.instance.client.auth.currentSession?.accessToken;
-    return {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    };
-  }
+  String _path(String path) => path.startsWith('/') ? path : '/$path';
 
-  dynamic _decode(http.Response response) {
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      if (response.body.isEmpty) return null;
-      return jsonDecode(response.body);
+  Never _throwApiException(DioException e) {
+    final response = e.response;
+    if (response == null) {
+      throw ApiException(0, e.message ?? 'Network error');
     }
-    throw ApiException(response.statusCode, response.body);
+    final data = response.data;
+    throw ApiException(
+      response.statusCode ?? 0,
+      data is String ? data : (data?.toString() ?? ''),
+    );
   }
 
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) async {
-    final response = await _client.get(_uri(path, query), headers: _headers);
-    return _decode(response);
+    try {
+      final response = await _dio.get(_path(path), queryParameters: query);
+      return response.data;
+    } on DioException catch (e) {
+      _throwApiException(e);
+    }
   }
 
   Future<dynamic> post(String path, {Object? body}) async {
-    final response = await _client.post(
-      _uri(path),
-      headers: _headers,
-      body: body == null ? null : jsonEncode(body),
-    );
-    return _decode(response);
+    try {
+      final response = await _dio.post(_path(path), data: body);
+      return response.data;
+    } on DioException catch (e) {
+      _throwApiException(e);
+    }
   }
 
   Future<dynamic> patch(String path, {Object? body}) async {
-    final response = await _client.patch(
-      _uri(path),
-      headers: _headers,
-      body: body == null ? null : jsonEncode(body),
-    );
-    return _decode(response);
+    try {
+      final response = await _dio.patch(_path(path), data: body);
+      return response.data;
+    } on DioException catch (e) {
+      _throwApiException(e);
+    }
   }
 
   Future<dynamic> put(String path, {Object? body}) async {
-    final response = await _client.put(
-      _uri(path),
-      headers: _headers,
-      body: body == null ? null : jsonEncode(body),
-    );
-    return _decode(response);
+    try {
+      final response = await _dio.put(_path(path), data: body);
+      return response.data;
+    } on DioException catch (e) {
+      _throwApiException(e);
+    }
   }
 
   Future<void> delete(String path) async {
-    final response = await _client.delete(_uri(path), headers: _headers);
-    _decode(response);
+    try {
+      await _dio.delete(_path(path));
+    } on DioException catch (e) {
+      _throwApiException(e);
+    }
   }
 }
 

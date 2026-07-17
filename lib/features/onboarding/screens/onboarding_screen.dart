@@ -36,8 +36,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (state.step < 3) {
       ref.read(onboardingProvider.notifier).nextStep();
       _pageCtrl.nextPage(
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeInOut);
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
     }
   }
 
@@ -46,8 +47,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (state.step > 0) {
       ref.read(onboardingProvider.notifier).prevStep();
       _pageCtrl.previousPage(
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeInOut);
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
     }
   }
 
@@ -64,7 +66,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     // Save income if provided
     final amount = double.tryParse(ob.incomeAmount);
     if (amount != null && amount > 0) {
-      await ref.read(transactionsProvider.notifier).addTransaction(
+      await ref
+          .read(transactionsProvider.notifier)
+          .addTransaction(
             TransactionModel(
               type: TransactionType.income,
               title: ob.incomeSource,
@@ -94,8 +98,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           children: [
             // Header with progress
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Row(
                 children: [
                   if (step > 0)
@@ -109,8 +112,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: AppColors.border),
                         ),
-                        child: const Icon(Icons.arrow_back_ios_new_rounded,
-                            size: 16, color: AppColors.textPrimary),
+                        child: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          size: 16,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     )
                   else
@@ -163,21 +169,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   onPressed: _isCompleting
                       ? null
                       : step == 3
-                          ? _complete
-                          : _goNext,
+                      ? _complete
+                      : _goNext,
                   child: _isCompleting
                       ? const SizedBox(
                           height: 22,
                           width: 22,
                           child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2.5),
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
                         )
                       : Text(
                           step == 0
                               ? 'Get Started'
                               : step == 3
-                                  ? 'Start Tracking'
-                                  : 'Continue',
+                              ? 'Start Tracking'
+                              : 'Continue',
                           style: GoogleFonts.inter(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -211,7 +219,7 @@ class _WelcomePage extends StatelessWidget {
             height: 160,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFFEEF2FF), Color(0xFFE0E7FF)],
+                colors: [AppColors.primaryLight, Color(0xFFD1FAE5)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -225,7 +233,9 @@ class _WelcomePage extends StatelessWidget {
           ),
           const SizedBox(height: 36),
           Text(
-            userName.isNotEmpty ? 'Hey, ${userName.split(' ').first}!' : 'Welcome!',
+            userName.isNotEmpty
+                ? 'Hey, ${userName.split(' ').first}!'
+                : 'Welcome!',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 32,
               fontWeight: FontWeight.w800,
@@ -272,8 +282,11 @@ class _FeatureRow extends StatelessWidget {
   final Color color;
   final String label;
 
-  const _FeatureRow(
-      {required this.icon, required this.color, required this.label});
+  const _FeatureRow({
+    required this.icon,
+    required this.color,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -292,9 +305,10 @@ class _FeatureRow extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.inter(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary),
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textPrimary,
+          ),
         ),
       ],
     );
@@ -323,8 +337,11 @@ class _CurrencyPage extends ConsumerWidget {
               color: AppColors.warning.withOpacity(0.12),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Icon(Icons.currency_exchange_rounded,
-                size: 32, color: AppColors.warning),
+            child: const Icon(
+              Icons.currency_exchange_rounded,
+              size: 32,
+              color: AppColors.warning,
+            ),
           ),
           const SizedBox(height: 24),
           Text(
@@ -339,7 +356,9 @@ class _CurrencyPage extends ConsumerWidget {
           Text(
             'This will be used throughout the app.',
             style: GoogleFonts.inter(
-                fontSize: 15, color: AppColors.textSecondary),
+              fontSize: 15,
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 28),
           Expanded(
@@ -352,8 +371,7 @@ class _CurrencyPage extends ConsumerWidget {
                 childAspectRatio: 2.8,
               ),
               itemBuilder: (ctx, i) {
-                final entry =
-                    AppConstants.currencies.entries.elementAt(i);
+                final entry = AppConstants.currencies.entries.elementAt(i);
                 final isSelected = entry.key == selected;
                 return GestureDetector(
                   onTap: () => ref
@@ -362,9 +380,7 @@ class _CurrencyPage extends ConsumerWidget {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.surface,
+                      color: isSelected ? AppColors.primary : AppColors.surface,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected
@@ -455,8 +471,11 @@ class _IncomePageState extends ConsumerState<_IncomePage> {
               color: AppColors.success.withOpacity(0.12),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Icon(Icons.savings_rounded,
-                size: 32, color: AppColors.success),
+            child: const Icon(
+              Icons.savings_rounded,
+              size: 32,
+              color: AppColors.success,
+            ),
           ),
           const SizedBox(height: 24),
           Text(
@@ -471,15 +490,20 @@ class _IncomePageState extends ConsumerState<_IncomePage> {
           Text(
             'You can always update this later from your account.',
             style: GoogleFonts.inter(
-                fontSize: 15, color: AppColors.textSecondary),
+              fontSize: 15,
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 28),
           // Income source
-          Text('Income source',
-              style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary)),
+          Text(
+            'Income source',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
           const SizedBox(height: 10),
           Wrap(
             spacing: 8,
@@ -491,14 +515,14 @@ class _IncomePageState extends ConsumerState<_IncomePage> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 8),
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected ? AppColors.primary : AppColors.surface,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.border,
+                      color: isSelected ? AppColors.primary : AppColors.border,
                     ),
                   ),
                   child: Text(
@@ -506,9 +530,7 @@ class _IncomePageState extends ConsumerState<_IncomePage> {
                     style: GoogleFonts.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
-                      color: isSelected
-                          ? Colors.white
-                          : AppColors.textPrimary,
+                      color: isSelected ? Colors.white : AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -517,16 +539,18 @@ class _IncomePageState extends ConsumerState<_IncomePage> {
           ),
           const SizedBox(height: 20),
           // Amount
-          Text('Monthly amount',
-              style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary)),
+          Text(
+            'Monthly amount',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
           const SizedBox(height: 10),
           TextField(
             controller: _amountCtrl,
-            keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             onChanged: notifier.setIncomeAmount,
             decoration: InputDecoration(
               hintText: '0.00',
@@ -546,11 +570,14 @@ class _IncomePageState extends ConsumerState<_IncomePage> {
           ),
           const SizedBox(height: 20),
           // Frequency
-          Text('Pay frequency',
-              style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary)),
+          Text(
+            'Pay frequency',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
           const SizedBox(height: 10),
           Wrap(
             spacing: 8,
@@ -562,14 +589,14 @@ class _IncomePageState extends ConsumerState<_IncomePage> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 8),
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected ? AppColors.primary : AppColors.surface,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.border,
+                      color: isSelected ? AppColors.primary : AppColors.border,
                     ),
                   ),
                   child: Text(
@@ -577,9 +604,7 @@ class _IncomePageState extends ConsumerState<_IncomePage> {
                     style: GoogleFonts.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
-                      color: isSelected
-                          ? Colors.white
-                          : AppColors.textPrimary,
+                      color: isSelected ? Colors.white : AppColors.textPrimary,
                     ),
                   ),
                 ),
