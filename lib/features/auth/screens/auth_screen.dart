@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/validators.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/email_step.dart';
+import '../widgets/name_step.dart';
+import '../widgets/code_step.dart';
 
 /// Passwordless sign-in, three steps: email -> (name, new accounts
 /// only) -> code. Supabase creates the account on first use, so
@@ -35,7 +39,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   Future<void> _submitEmail() async {
     final email = _emailCtrl.text.trim();
-    if (email.isEmpty || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+    if (email.isEmpty || !isValidEmail(email)) {
       setState(() => _errorMsg = 'Please enter a valid email address.');
       return;
     }
@@ -160,13 +164,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       ),
                       const SizedBox(height: 40),
                       if (_step == _Step.email)
-                        _EmailStep(
+                        EmailStep(
                           emailCtrl: _emailCtrl,
                           onSubmit: _submitEmail,
                           isLoading: _isLoading,
                         )
                       else if (_step == _Step.name)
-                        _NameStep(
+                        NameStep(
                           nameCtrl: _nameCtrl,
                           onSubmit: _submitName,
                           onChangeEmail: () => setState(() {
@@ -176,7 +180,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           isLoading: _isLoading,
                         )
                       else
-                        _CodeStep(
+                        CodeStep(
                           email: _emailCtrl.text.trim(),
                           codeCtrl: _codeCtrl,
                           onSubmit: _verifyCode,
@@ -229,183 +233,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           },
         ),
       ),
-    );
-  }
-}
-
-class _EmailStep extends StatelessWidget {
-  final TextEditingController emailCtrl;
-  final VoidCallback onSubmit;
-  final bool isLoading;
-
-  const _EmailStep({
-    required this.emailCtrl,
-    required this.onSubmit,
-    required this.isLoading,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        TextField(
-          controller: emailCtrl,
-          keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(
-            hintText: 'Email address',
-            prefixIcon: Icon(
-              Icons.email_outlined,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        SizedBox(
-          height: 52,
-          child: ElevatedButton(
-            onPressed: isLoading ? null : onSubmit,
-            child: isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
-                : const Text('Continue'),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _NameStep extends StatelessWidget {
-  final TextEditingController nameCtrl;
-  final VoidCallback onSubmit;
-  final VoidCallback onChangeEmail;
-  final bool isLoading;
-
-  const _NameStep({
-    required this.nameCtrl,
-    required this.onSubmit,
-    required this.onChangeEmail,
-    required this.isLoading,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          "We don't have an account for that email yet — what's your name?",
-          textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 14),
-        TextField(
-          controller: nameCtrl,
-          textCapitalization: TextCapitalization.words,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Full name',
-            prefixIcon: Icon(
-              Icons.person_outline_rounded,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        SizedBox(
-          height: 52,
-          child: ElevatedButton(
-            onPressed: isLoading ? null : onSubmit,
-            child: isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
-                : const Text('Continue'),
-          ),
-        ),
-        const SizedBox(height: 12),
-        TextButton(
-          onPressed: isLoading ? null : onChangeEmail,
-          child: const Text('Use a different email'),
-        ),
-      ],
-    );
-  }
-}
-
-class _CodeStep extends StatelessWidget {
-  final String email;
-  final TextEditingController codeCtrl;
-  final VoidCallback onSubmit;
-  final VoidCallback onChangeEmail;
-  final bool isLoading;
-
-  const _CodeStep({
-    required this.email,
-    required this.codeCtrl,
-    required this.onSubmit,
-    required this.onChangeEmail,
-    required this.isLoading,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'We sent a code to $email',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 14),
-        TextField(
-          controller: codeCtrl,
-          keyboardType: TextInputType.number,
-          textAlign: TextAlign.center,
-          decoration: const InputDecoration(hintText: '6-digit code'),
-        ),
-        const SizedBox(height: 24),
-        SizedBox(
-          height: 52,
-          child: ElevatedButton(
-            onPressed: isLoading ? null : onSubmit,
-            child: isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
-                : const Text('Verify & Continue'),
-          ),
-        ),
-        const SizedBox(height: 12),
-        TextButton(
-          onPressed: isLoading ? null : onChangeEmail,
-          child: const Text('Use a different email'),
-        ),
-      ],
     );
   }
 }
