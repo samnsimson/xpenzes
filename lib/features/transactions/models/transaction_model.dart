@@ -1,3 +1,5 @@
+import '../../../core/constants/app_constants.dart';
+
 enum TransactionType { income, expense }
 
 extension TransactionTypeX on TransactionType {
@@ -5,6 +7,13 @@ extension TransactionTypeX on TransactionType {
 
   static TransactionType fromValue(String value) =>
       value == 'income' ? TransactionType.income : TransactionType.expense;
+
+  /// Which categories apply to this transaction type — income sources for
+  /// income, expense categories otherwise. A property of the type itself,
+  /// not any particular screen.
+  List<String> get categories => this == TransactionType.income
+      ? AppConstants.incomeSources
+      : AppConstants.expenseCategories;
 }
 
 class TransactionModel {

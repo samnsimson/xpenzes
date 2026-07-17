@@ -4,9 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/validators.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/transaction_model.dart';
 import '../providers/transactions_provider.dart';
+import 'type_toggle_button.dart';
 
 class AddTransactionSheet extends ConsumerStatefulWidget {
   final TransactionModel? existing;
@@ -34,7 +36,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       TextEditingController(text: widget.existing?.notes ?? '');
 
   late TransactionType _type = widget.existing?.type ?? widget.initialType;
-  late String _category = widget.existing?.category ?? _categoriesFor(_type).first;
+  late String _category = widget.existing?.category ?? _type.categories.first;
   late DateTime _date = widget.existing?.date ?? DateTime.now();
   late bool _isRecurring = widget.existing?.isRecurring ?? false;
   late String _frequency = widget.existing?.recurrenceFrequency ??
@@ -42,11 +44,6 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   bool _isSaving = false;
 
   bool get _isEditing => widget.existing != null;
-
-  static List<String> _categoriesFor(TransactionType type) =>
-      type == TransactionType.income
-          ? AppConstants.incomeSources
-          : AppConstants.expenseCategories;
 
   @override
   void dispose() {
@@ -59,8 +56,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   void _setType(TransactionType type) {
     setState(() {
       _type = type;
-      final categories = _categoriesFor(type);
-      if (!categories.contains(_category)) _category = categories.first;
+      if (!type.categories.contains(_category)) _category = type.categories.first;
     });
   }
 
@@ -84,17 +80,19 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
 
   Future<void> _save() async {
     final title = _titleCtrl.text.trim();
-    final amount = double.tryParse(_amountCtrl.text.trim());
+    final amountText = _amountCtrl.text.trim();
 
-    if (title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(_snackBar('Please enter a title.'));
+    final titleError = validateTransactionTitle(title);
+    if (titleError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(_snackBar(titleError));
       return;
     }
-    if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(_snackBar('Please enter a valid amount.'));
+    final amountError = validateTransactionAmount(amountText);
+    if (amountError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(_snackBar(amountError));
       return;
     }
+    final amount = double.parse(amountText);
 
     setState(() => _isSaving = true);
 
@@ -129,10 +127,9 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(authProvider).value;
-    final symbol = AppConstants.currencies[user?.currency ?? 'USD'] ?? '\$';
+    final symbol = ref.watch(currencySymbolProvider);
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final categories = _categoriesFor(_type);
+    final categories = _type.categories;
 
     return Container(
       decoration: const BoxDecoration(
@@ -171,7 +168,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
             Row(
               children: [
                 Expanded(
-                  child: _TypeToggleButton(
+                  child: TypeToggleButton(
                     label: 'Expense',
                     icon: Icons.trending_down_rounded,
                     isSelected: _type == TransactionType.expense,
@@ -181,7 +178,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: _TypeToggleButton(
+                  child: TypeToggleButton(
                     label: 'Income',
                     icon: Icons.trending_up_rounded,
                     isSelected: _type == TransactionType.income,
@@ -382,53 +379,6 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                             color: Colors.white, strokeWidth: 2),
                       )
                     : Text(_isEditing ? 'Update Transaction' : 'Save Transaction'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TypeToggleButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool isSelected;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _TypeToggleButton({
-    required this.label,
-    required this.icon,
-    required this.isSelected,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.12) : AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? color : AppColors.border),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 18, color: isSelected ? color : AppColors.textSecondary),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? color : AppColors.textSecondary,
               ),
             ),
           ],
