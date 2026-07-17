@@ -12,15 +12,25 @@ const _bannerInterval = 5;
 /// Groups [transactions] (already filtered/sorted by the caller) into a
 /// flat list of date-label headers, [ProBannerMarker]s, and the
 /// transactions themselves — the shape [HomeTransactionSliverList] renders.
-List<Object> groupTransactionsByDate(List<TransactionModel> transactions) {
+///
+/// Set [groupByDate] to false when the list isn't sorted chronologically
+/// (e.g. sorted by amount/title/category) — date-label headers like
+/// TODAY/YESTERDAY would be misleading against an out-of-order list, so
+/// only the pro-banner interleaving happens in that case.
+List<Object> groupTransactionsByDate(
+  List<TransactionModel> transactions, {
+  bool groupByDate = true,
+}) {
   final result = <Object>[];
   String? lastLabel;
   var transactionCount = 0;
   for (final t in transactions) {
-    final label = dateLabel(t.date);
-    if (label != lastLabel) {
-      result.add(label);
-      lastLabel = label;
+    if (groupByDate) {
+      final label = dateLabel(t.date);
+      if (label != lastLabel) {
+        result.add(label);
+        lastLabel = label;
+      }
     }
     result.add(t);
     transactionCount++;

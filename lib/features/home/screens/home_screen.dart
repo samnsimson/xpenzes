@@ -6,8 +6,11 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/collapsing_sliver_app_bar_mixin.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../transactions/providers/transactions_provider.dart';
+import '../../transactions/providers/transaction_filter_provider.dart';
+import '../../transactions/models/transaction_filter.dart';
 import '../../transactions/models/transaction_model.dart';
 import '../../transactions/widgets/add_transaction_sheet.dart';
+import '../widgets/filter_sort_sheet.dart';
 import '../widgets/home_empty_state.dart';
 import '../widgets/home_meter_row.dart';
 import '../widgets/home_transaction_list.dart';
@@ -48,12 +51,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final transactionsAsync = ref.watch(transactionsProvider);
     final hideRecurringIncome = ref.watch(hideRecurringIncomeProvider);
     final symbol = ref.watch(currencySymbolProvider);
+    final filter = ref.watch(transactionFilterProvider);
 
     final transactions = transactionsAsync.value ?? [];
     final monthTransactions = transactions.where(
       (t) => t.date.year == _selectedMonth.year && t.date.month == _selectedMonth.month,
     );
 
+    // Header totals always reflect the true month totals, independent of
+    // the list filter below.
     final totalExpenses = monthTransactions
         .where((t) => t.type == TransactionType.expense)
         .fold<double>(0, (s, t) => s + t.amount);
@@ -64,13 +70,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     bool isFutureRecurringIncome(TransactionModel t) => t.type == TransactionType.income && t.isRecurring && t.isFuture;
 
-    // Only show transactions belonging to the selected month, grouped by
-    // date label, most recent/soonest first — like a calendar month view.
+    // Only show transactions belonging to the selected month, then apply
+    // the user's filter/sort — like a calendar month view, narrowed down.
     final listTransactions = hideRecurringIncome
         ? monthTransactions.where((t) => !isFutureRecurringIncome(t)).toList()
         : monthTransactions.toList();
-    final sorted = [...listTransactions]..sort((a, b) => b.date.compareTo(a.date));
-    final grouped = groupTransactionsByDate(sorted);
+    final filteredTransactions = filter.apply(listTransactions);
+    final grouped = groupTransactionsByDate(
+      filteredTransactions,
+      groupByDate: filter.sortBy == TransactionSortField.date,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -131,8 +140,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   ),
                   const Spacer(),
                   Text(
-                    '${monthTransactions.length} transactions',
+                    '${filteredTransactions.length} transactions',
                     style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
+                  ),
+                  if (filter.isActive)
+                    TextButton(
+                      onPressed: () => ref.read(transactionFilterProvider.notifier).state =
+                          const TransactionFilter(),
+                      style: TextButton.styleFrom(
+                        minimumSize: Size.zero,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                      child: Text(
+                        'Clear',
+                        style: GoogleFonts.inter(fontSize: 13, color: AppColors.error),
+                      ),
+                    ),
+                  IconButton(
+                    onPressed: () => showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => const FilterSortSheet(),
+                    ),
+                    icon: const Icon(Icons.tune_rounded),
+                    color: filter.isActive ? AppColors.primary : AppColors.textSecondary,
+                    visualDensity: VisualDensity.compact,
                   ),
                 ],
               ),
@@ -155,8 +188,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 return SliverFillRemaining(
                   child: Center(
                     child: Text(
-                      'No transactions in '
-                      '${DateFormat('MMMM yyyy').format(_selectedMonth)}.',
+                      listTransactions.isEmpty
+                          ? 'No transactions in '
+                              '${DateFormat('MMMM yyyy').format(_selectedMonth)}.'
+                          : 'No transactions match your filter.',
                       style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
                     ),
                   ),
