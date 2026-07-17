@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/collapsing_sliver_app_bar_mixin.dart';
 import '../constants/subscription_constants.dart';
 import 'payment_screen.dart';
 
@@ -11,41 +12,21 @@ class ProFeaturesScreen extends StatefulWidget {
   State<ProFeaturesScreen> createState() => _ProFeaturesScreenState();
 }
 
-class _ProFeaturesScreenState extends State<ProFeaturesScreen> {
-  static const _collapsedThreshold = 160.0;
+class _ProFeaturesScreenState extends State<ProFeaturesScreen>
+    with CollapsingSliverAppBarMixin<ProFeaturesScreen> {
+  @override
+  double get collapsedThreshold => 160.0;
 
   SubscriptionPlan _selectedPlan = SubscriptionPlan.yearly;
-  final _scrollController = ScrollController();
-  bool _showCollapsedTitle = false;
 
   static const _gradientColors = [Color(0xFFF59E0B), Color(0xFFEC4899)];
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    final show = _scrollController.offset > _collapsedThreshold;
-    if (show != _showCollapsedTitle) {
-      setState(() => _showCollapsedTitle = show);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
-        controller: _scrollController,
+        controller: scrollController,
         slivers: [
           SliverAppBar(
             expandedHeight: 220,
@@ -53,7 +34,7 @@ class _ProFeaturesScreenState extends State<ProFeaturesScreen> {
             backgroundColor: _gradientColors.first,
             iconTheme: const IconThemeData(color: Colors.white),
             title: AnimatedOpacity(
-              opacity: _showCollapsedTitle ? 1 : 0,
+              opacity: showCollapsedTitle ? 1 : 0,
               duration: const Duration(milliseconds: 150),
               child: Text(
                 'Xpenzes Pro',
