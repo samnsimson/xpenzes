@@ -3,15 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/constants/app_constants.dart';
+import '../../../core/widgets/collapsing_sliver_app_bar_mixin.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../transactions/providers/transactions_provider.dart';
 import '../../transactions/models/transaction_model.dart';
-import '../../transactions/widgets/transaction_card.dart';
 import '../../transactions/widgets/add_transaction_sheet.dart';
-import '../../transactions/widgets/transaction_detail_sheet.dart';
-import '../../transactions/widgets/meter_gauge.dart';
-import '../../subscription/widgets/pro_banner.dart';
+import '../widgets/home_empty_state.dart';
+import '../widgets/home_meter_row.dart';
+import '../widgets/home_transaction_list.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -20,11 +19,8 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
-  static const _collapsedThreshold = 150.0;
-
-  final _scrollController = ScrollController();
-  bool _showCollapsedTitle = false;
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with CollapsingSliverAppBarMixin<HomeScreen> {
   late DateTime _selectedMonth;
 
   @override
@@ -32,7 +28,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     final now = DateTime.now();
     _selectedMonth = DateTime(now.year, now.month);
-    _scrollController.addListener(_onScroll);
   }
 
   void _goToPreviousMonth() {
@@ -48,25 +43,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    final show = _scrollController.offset > _collapsedThreshold;
-    if (show != _showCollapsedTitle) {
-      setState(() => _showCollapsedTitle = show);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider).value;
     final transactionsAsync = ref.watch(transactionsProvider);
     final hideRecurringIncome = ref.watch(hideRecurringIncomeProvider);
-    final symbol = AppConstants.currencies[user?.currency ?? 'USD'] ?? '\$';
+    final symbol = ref.watch(currencySymbolProvider);
 
     final transactions = transactionsAsync.value ?? [];
     final monthTransactions = transactions.where(
@@ -80,7 +61,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .where((t) => t.type == TransactionType.income)
         .fold<double>(0, (s, t) => s + t.amount);
     final balance = monthlyIncome - totalExpenses;
-    final gaugeMax = [monthlyIncome, totalExpenses, balance.abs(), 1.0].reduce((a, b) => a > b ? a : b);
 
     bool isFutureRecurringIncome(TransactionModel t) => t.type == TransactionType.income && t.isRecurring && t.isFuture;
 
@@ -90,14 +70,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ? monthTransactions.where((t) => !isFutureRecurringIncome(t)).toList()
         : monthTransactions.toList();
     final sorted = [...listTransactions]..sort((a, b) => b.date.compareTo(a.date));
-    final grouped = _groupByDate(sorted);
+    final grouped = groupTransactionsByDate(sorted);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
-        controller: _scrollController,
+        controller: scrollController,
         slivers: [
-          // Gradient app bar
           SliverAppBar(
             expandedHeight: 210,
             floating: false,
@@ -105,7 +84,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             title: AnimatedOpacity(
-              opacity: _showCollapsedTitle ? 1 : 0,
+              opacity: showCollapsedTitle ? 1 : 0,
               duration: const Duration(milliseconds: 150),
               child: Text(
                 'Xpenzes',
@@ -113,94 +92,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.primary, Color(0xFF818CF8)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _greeting(),
-                                  style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.8), fontSize: 14),
-                                ),
-                                Text(
-                                  user?.name.split(' ').first ?? 'there',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const Spacer(),
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  (user?.name.isNotEmpty == true) ? user!.name[0].toUpperCase() : '?',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 18),
-                        // Meter gauges
-                        Row(
-                          children: [
-                            MeterGauge(
-                              label: 'Income',
-                              valueText: '$symbol${_compact(monthlyIncome)}',
-                              value: monthlyIncome,
-                              max: gaugeMax,
-                              color: AppColors.success,
-                            ),
-                            const SizedBox(width: 10),
-                            MeterGauge(
-                              label: 'Spent',
-                              valueText: '$symbol${_compact(totalExpenses)}',
-                              value: totalExpenses,
-                              max: gaugeMax,
-                              color: AppColors.secondary,
-                            ),
-                            const SizedBox(width: 10),
-                            MeterGauge(
-                              label: 'Balance',
-                              valueText: '$symbol${_compact(balance)}',
-                              value: balance < 0 ? 0 : balance,
-                              max: gaugeMax,
-                              color: balance >= 0 ? Colors.white : AppColors.secondary,
-                              highlight: true,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              background: HomeHeader(
+                userName: user?.name.split(' ').first ?? '',
+                symbol: symbol,
+                monthlyIncome: monthlyIncome,
+                totalExpenses: totalExpenses,
+                balance: balance,
               ),
             ),
             actions: const [SizedBox(width: 4)],
@@ -252,7 +149,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             data: (allTransactions) {
               if (allTransactions.isEmpty) {
-                return SliverFillRemaining(child: _EmptyState());
+                return const SliverFillRemaining(child: HomeEmptyState());
               }
               if (grouped.isEmpty) {
                 return SliverFillRemaining(
@@ -265,39 +162,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 );
               }
-              return SliverList(
-                delegate: SliverChildBuilderDelegate((ctx, i) {
-                  final item = grouped[i];
-                  if (item is ProBannerMarker) {
-                    return const ProBanner();
-                  }
-                  if (item is String) {
-                    return Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 6),
-                      child: Text(
-                        item,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    );
-                  }
-                  final transaction = item as TransactionModel;
-                  return TransactionCard(
-                    transaction: transaction,
-                    currencySymbol: symbol,
-                    onTap: () => showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (_) => TransactionDetailSheet(transaction: transaction),
-                    ),
-                    onDelete: () => ref.read(transactionsProvider.notifier).deleteTransaction(transaction.id!),
-                  );
-                }, childCount: grouped.length),
+              return HomeTransactionSliverList(
+                grouped: grouped,
+                currencySymbol: symbol,
+                onDeleteTransaction: (t) => ref.read(transactionsProvider.notifier).deleteTransaction(t.id!),
               );
             },
           ),
@@ -317,87 +185,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         foregroundColor: Colors.white,
         elevation: 4,
         child: const Icon(Icons.add_rounded),
-      ),
-    );
-  }
-
-  String _greeting() {
-    final h = DateTime.now().hour;
-    if (h < 12) return 'Good morning,';
-    if (h < 17) return 'Good afternoon,';
-    return 'Good evening,';
-  }
-
-  String _compact(double v) {
-    if (v.abs() >= 1000000) {
-      return '${(v / 1000000).toStringAsFixed(1)}M';
-    }
-    if (v.abs() >= 1000) {
-      return '${(v / 1000).toStringAsFixed(1)}k';
-    }
-    return NumberFormat('#,##0.00').format(v);
-  }
-
-  static const _bannerInterval = 5;
-
-  List<Object> _groupByDate(List<TransactionModel> transactions) {
-    final result = <Object>[];
-    String? lastLabel;
-    var transactionCount = 0;
-    for (final t in transactions) {
-      final label = _dateLabel(t.date);
-      if (label != lastLabel) {
-        result.add(label);
-        lastLabel = label;
-      }
-      result.add(t);
-      transactionCount++;
-      if (transactionCount % _bannerInterval == 0) {
-        result.add(const ProBannerMarker());
-      }
-    }
-    return result;
-  }
-
-  String _dateLabel(DateTime d) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final day = DateTime(d.year, d.month, d.day);
-    final diff = today.difference(day).inDays;
-    if (diff < 0) {
-      return 'UPCOMING · ${DateFormat('EEEE, MMM d').format(d).toUpperCase()}';
-    }
-    if (diff == 0) return 'TODAY';
-    if (diff == 1) return 'YESTERDAY';
-    return DateFormat('EEEE, MMM d').format(d).toUpperCase();
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(color: AppColors.primaryLight, shape: BoxShape.circle),
-            child: const Icon(Icons.receipt_long_rounded, size: 36, color: AppColors.primary),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No transactions yet',
-            style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Tap the button below to add your\nfirst transaction.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
-          ),
-        ],
       ),
     );
   }
