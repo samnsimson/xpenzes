@@ -27,7 +27,7 @@ class AnalyticsScreen extends ConsumerWidget {
     final trend = ref.watch(analyticsTrendProvider).value ?? [];
     final spendRadar = ref.watch(spendRadarProvider).value;
     final symbol = ref.watch(currencySymbolProvider);
-    final topExpenses = ref.watch(topExpensesThisMonthProvider);
+    final topExpenses = ref.watch(topExpensesThisMonthProvider).value ?? [];
 
     final totalMonthlyRecurring = spendRadar?.totalMonthlyExpense ?? 0;
 

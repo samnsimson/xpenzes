@@ -88,19 +88,12 @@ final analyticsTrendProvider = FutureProvider<List<MonthTotal>>((ref) async {
 });
 
 /// The top 5 expenses for the current calendar month, highest first.
-///
-/// A per-transaction top-N pick, not a server aggregation — the only
-/// client-side sort left in the analytics screen — so it's derived here
-/// from [transactionsProvider] rather than a dedicated endpoint.
-final topExpensesThisMonthProvider = Provider<List<TransactionModel>>((ref) {
-  final transactions = ref.watch(transactionsProvider).value ?? [];
-  final now = DateTime.now();
-  final sorted = transactions
-      .where((t) =>
-          t.type == TransactionType.expense &&
-          t.date.year == now.year &&
-          t.date.month == now.month)
-      .toList()
-    ..sort((a, b) => b.amount.compareTo(a.amount));
-  return sorted.take(5).toList();
+final topExpensesThisMonthProvider = FutureProvider<List<TransactionModel>>((ref) async {
+  final user = await ref.watch(authProvider.future);
+  if (user == null) return [];
+  // Re-fetch whenever the transaction list changes, since the top expenses
+  // depend on current month transactions.
+  ref.watch(transactionsProvider);
+  final json = await apiClient.get('/analytics/top-expenses') as List<dynamic>;
+  return json.map((e) => TransactionModel.fromJson(e as Map<String, dynamic>)).toList();
 });
