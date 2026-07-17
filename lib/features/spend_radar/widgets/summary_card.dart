@@ -20,7 +20,7 @@ class SummaryCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [AppColors.primary, Color(0xFF818CF8)],
+          colors: [AppColors.primary, AppColors.success],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

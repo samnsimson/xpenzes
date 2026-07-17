@@ -29,7 +29,7 @@ class HomeHeader extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.primary, Color(0xFF818CF8)],
+          colors: [AppColors.primary, AppColors.success],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
