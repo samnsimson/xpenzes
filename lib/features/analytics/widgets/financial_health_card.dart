@@ -7,12 +7,7 @@ class FinancialHealthCard extends StatelessWidget {
   final double expenses;
   final String symbol;
 
-  const FinancialHealthCard({
-    super.key,
-    required this.income,
-    required this.expenses,
-    required this.symbol,
-  });
+  const FinancialHealthCard({super.key, required this.income, required this.expenses, required this.symbol});
 
   @override
   Widget build(BuildContext context) {
@@ -43,19 +38,16 @@ class FinancialHealthCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withOpacity(0.25)),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Row(
         children: [
           Container(
             width: 52,
             height: 52,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(16),
-            ),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(16)),
             child: Icon(icon, color: color, size: 26),
           ),
           const SizedBox(width: 16),
@@ -76,10 +68,7 @@ class FinancialHealthCard extends StatelessWidget {
                   income <= 0
                       ? 'Add income to see your savings rate.'
                       : 'Saving ${(savingsRate * 100).toStringAsFixed(0)}% of income this month.',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
+                  style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
                 ),
               ],
             ),

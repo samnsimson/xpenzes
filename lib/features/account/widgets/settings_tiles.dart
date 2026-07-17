@@ -24,7 +24,7 @@ class SectionHeader extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );
@@ -68,7 +68,7 @@ class SettingTile extends StatelessWidget {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.12),
+              color: iconColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: iconColor, size: 20),
@@ -82,19 +82,9 @@ class SettingTile extends StatelessWidget {
             ),
           ),
           subtitle: subtitle != null
-              ? Text(
-                  subtitle!,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                )
+              ? Text(subtitle!, style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary))
               : null,
-          trailing: Icon(
-            Icons.chevron_right_rounded,
-            color: AppColors.textSecondary.withOpacity(0.5),
-            size: 20,
-          ),
+          trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary.withValues(alpha: 0.5), size: 20),
         ),
       ),
     );
@@ -135,24 +125,16 @@ class SettingSwitchTile extends StatelessWidget {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.12),
+              color: iconColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: iconColor, size: 20),
           ),
           title: Text(
             title,
-            style: GoogleFonts.inter(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
-            ),
+            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
           ),
-          trailing: Switch(
-            value: value,
-            activeThumbColor: AppColors.primary,
-            onChanged: onChanged,
-          ),
+          trailing: Switch(value: value, activeThumbColor: AppColors.primary, onChanged: onChanged),
         ),
       ),
     );

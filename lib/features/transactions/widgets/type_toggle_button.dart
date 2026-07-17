@@ -26,7 +26,7 @@ class TypeToggleButton extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.12) : AppColors.surface,
+          color: isSelected ? color.withValues(alpha: 0.12) : AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: isSelected ? color : AppColors.border),
         ),

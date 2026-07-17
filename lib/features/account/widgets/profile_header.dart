@@ -26,20 +26,11 @@ class ProfileHeader extends StatelessWidget {
           Container(
             width: 60,
             height: 60,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
             child: Center(
               child: Text(
-                (user?.name.isNotEmpty == true)
-                    ? user!.name[0].toUpperCase()
-                    : '?',
-                style: GoogleFonts.plusJakartaSans(
-                  color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
-                ),
+                (user?.name.isNotEmpty == true) ? user!.name[0].toUpperCase() : '?',
+                style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -50,19 +41,12 @@ class ProfileHeader extends StatelessWidget {
               children: [
                 Text(
                   user?.name ?? '',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   user?.email ?? '',
-                  style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 13,
-                  ),
+                  style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.8), fontSize: 13),
                 ),
               ],
             ),

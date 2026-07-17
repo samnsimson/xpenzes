@@ -14,33 +14,24 @@ class AddTransactionSheet extends ConsumerStatefulWidget {
   final TransactionModel? existing;
   final TransactionType initialType;
 
-  const AddTransactionSheet({
-    super.key,
-    this.existing,
-    this.initialType = TransactionType.expense,
-  });
+  const AddTransactionSheet({super.key, this.existing, this.initialType = TransactionType.expense});
 
   @override
-  ConsumerState<AddTransactionSheet> createState() =>
-      _AddTransactionSheetState();
+  ConsumerState<AddTransactionSheet> createState() => _AddTransactionSheetState();
 }
 
 class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   late final _titleCtrl = TextEditingController(text: widget.existing?.title);
   late final _amountCtrl = TextEditingController(
-    text: widget.existing != null
-        ? widget.existing!.amount.toStringAsFixed(2)
-        : '',
+    text: widget.existing != null ? widget.existing!.amount.toStringAsFixed(2) : '',
   );
-  late final _notesCtrl =
-      TextEditingController(text: widget.existing?.notes ?? '');
+  late final _notesCtrl = TextEditingController(text: widget.existing?.notes ?? '');
 
   late TransactionType _type = widget.existing?.type ?? widget.initialType;
   late String _category = widget.existing?.category ?? _type.categories.first;
   late DateTime _date = widget.existing?.date ?? DateTime.now();
   late bool _isRecurring = widget.existing?.isRecurring ?? false;
-  late String _frequency = widget.existing?.recurrenceFrequency ??
-      AppConstants.recurrenceFrequencies[2];
+  late String _frequency = widget.existing?.recurrenceFrequency ?? AppConstants.recurrenceFrequencies[2];
   bool _isSaving = false;
 
   bool get _isEditing => widget.existing != null;
@@ -67,11 +58,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
       builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: Theme.of(ctx)
-              .colorScheme
-              .copyWith(primary: AppColors.primary),
-        ),
+        data: Theme.of(ctx).copyWith(colorScheme: Theme.of(ctx).colorScheme.copyWith(primary: AppColors.primary)),
         child: child!,
       ),
     );
@@ -119,11 +106,11 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   }
 
   SnackBar _snackBar(String msg) => SnackBar(
-        content: Text(msg, style: GoogleFonts.inter()),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        margin: const EdgeInsets.all(16),
-      );
+    content: Text(msg, style: GoogleFonts.inter()),
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    margin: const EdgeInsets.all(16),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -147,16 +134,11 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                 width: 40,
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: AppColors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+                decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2)),
               ),
             ),
             Text(
-              _isEditing
-                  ? 'Edit Transaction'
-                  : 'Add Transaction',
+              _isEditing ? 'Edit Transaction' : 'Add Transaction',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -194,26 +176,20 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               textCapitalization: TextCapitalization.sentences,
               decoration: const InputDecoration(
                 hintText: 'Title',
-                prefixIcon: Icon(Icons.receipt_long_rounded,
-                    color: AppColors.textSecondary),
+                prefixIcon: Icon(Icons.receipt_long_rounded, color: AppColors.textSecondary),
               ),
             ),
             const SizedBox(height: 14),
             TextField(
               controller: _amountCtrl,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
                 hintText: '0.00',
                 prefixIcon: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: Text(
                     symbol,
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
+                    style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                   ),
                 ),
                 prefixIconConstraints: const BoxConstraints(minWidth: 0),
@@ -223,8 +199,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
             GestureDetector(
               onTap: _pickDate,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(12),
@@ -232,17 +207,14 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_today_rounded,
-                        color: AppColors.textSecondary, size: 18),
+                    const Icon(Icons.calendar_today_rounded, color: AppColors.textSecondary, size: 18),
                     const SizedBox(width: 12),
                     Text(
                       DateFormat('MMMM d, yyyy').format(_date),
-                      style: GoogleFonts.inter(
-                          fontSize: 14, color: AppColors.textPrimary),
+                      style: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary),
                     ),
                     const Spacer(),
-                    const Icon(Icons.chevron_right_rounded,
-                        color: AppColors.textSecondary, size: 18),
+                    const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary, size: 18),
                   ],
                 ),
               ),
@@ -250,10 +222,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
             const SizedBox(height: 18),
             Text(
               _type == TransactionType.income ? 'Source' : 'Category',
-              style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary),
+              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 10),
             SizedBox(
@@ -261,7 +230,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: categories.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
                 itemBuilder: (ctx, i) {
                   final cat = categories[i];
                   final color = _type == TransactionType.income
@@ -272,10 +241,9 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                     onTap: () => setState(() => _category = cat),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: isSelected ? color : color.withOpacity(0.1),
+                        color: isSelected ? color : color.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -298,15 +266,12 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                 Expanded(
                   child: Text(
                     'Repeats',
-                    style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary),
+                    style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                   ),
                 ),
                 Switch(
                   value: _isRecurring,
-                  activeColor: AppColors.primary,
+                  activeThumbColor: AppColors.primary,
                   onChanged: (v) => setState(() => _isRecurring = v),
                 ),
               ],
@@ -322,25 +287,20 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                     onTap: () => setState(() => _frequency = f),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color:
-                            isSelected ? AppColors.primary : AppColors.surface,
+                        color: isSelected ? AppColors.primary : AppColors.surface,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.border,
+                        border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
+                      ),
+                      child: Text(
+                        f,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: isSelected ? Colors.white : AppColors.textPrimary,
                         ),
                       ),
-                      child: Text(f,
-                          style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: isSelected
-                                  ? Colors.white
-                                  : AppColors.textPrimary)),
                     ),
                   );
                 }).toList(),
@@ -349,8 +309,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                 const SizedBox(height: 8),
                 Text(
                   'Creates the next 12 occurrences.',
-                  style: GoogleFonts.inter(
-                      fontSize: 12, color: AppColors.textSecondary),
+                  style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
                 ),
               ],
             ],
@@ -360,8 +319,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               maxLines: 2,
               decoration: const InputDecoration(
                 hintText: 'Notes (optional)',
-                prefixIcon: Icon(Icons.notes_rounded,
-                    color: AppColors.textSecondary),
+                prefixIcon: Icon(Icons.notes_rounded, color: AppColors.textSecondary),
                 alignLabelWithHint: true,
               ),
             ),
@@ -375,8 +333,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                       )
                     : Text(_isEditing ? 'Update Transaction' : 'Save Transaction'),
               ),

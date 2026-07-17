@@ -13,12 +13,7 @@ class IncomeSourcesList extends ConsumerWidget {
   final ValueChanged<TransactionModel> onEdit;
   final ValueChanged<String> onDelete;
 
-  const IncomeSourcesList({
-    super.key,
-    required this.symbol,
-    required this.onEdit,
-    required this.onDelete,
-  });
+  const IncomeSourcesList({super.key, required this.symbol, required this.onEdit, required this.onDelete});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,11 +22,9 @@ class IncomeSourcesList extends ConsumerWidget {
     return spendRadarAsync.when(
       loading: () => const Padding(
         padding: EdgeInsets.all(20),
-        child: Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
+        child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
       ),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
       data: (spendRadar) {
         final incomes = spendRadar.recurringIncome.toList()
           ..sort((a, b) => a.transaction.title.compareTo(b.transaction.title));
@@ -48,18 +41,11 @@ class IncomeSourcesList extends ConsumerWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.info_outline_rounded,
-                    color: AppColors.textSecondary,
-                    size: 18,
-                  ),
+                  const Icon(Icons.info_outline_rounded, color: AppColors.textSecondary, size: 18),
                   const SizedBox(width: 10),
                   Text(
                     'No income sources added yet.',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
+                    style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
                   ),
                 ],
               ),
@@ -88,12 +74,7 @@ class _IncomeTile extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onEdit;
 
-  const _IncomeTile({
-    required this.income,
-    required this.symbol,
-    required this.onDelete,
-    required this.onEdit,
-  });
+  const _IncomeTile({required this.income, required this.symbol, required this.onDelete, required this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -114,49 +95,30 @@ class _IncomeTile extends StatelessWidget {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.12),
+              color: AppColors.success.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(
-              Icons.savings_rounded,
-              color: AppColors.success,
-              size: 20,
-            ),
+            child: const Icon(Icons.savings_rounded, color: AppColors.success, size: 20),
           ),
           title: Text(
             income.title,
-            style: GoogleFonts.inter(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
-            ),
+            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
           ),
           subtitle: Text(
             income.recurrenceFrequency ?? '',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
+            style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 '$symbol${NumberFormat('#,##0.00').format(income.amount)}',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.success,
-                ),
+                style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.success),
               ),
               const SizedBox(width: 8),
               GestureDetector(
                 onTap: onDelete,
-                child: const Icon(
-                  Icons.delete_outline_rounded,
-                  color: AppColors.error,
-                  size: 18,
-                ),
+                child: const Icon(Icons.delete_outline_rounded, color: AppColors.error, size: 18),
               ),
             ],
           ),

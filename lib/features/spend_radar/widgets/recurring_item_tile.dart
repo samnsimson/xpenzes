@@ -16,14 +16,11 @@ class RecurringItemTile extends StatelessWidget {
 
   bool get _isIncome => transaction.type == TransactionType.income;
 
-  Color get _color => _isIncome
-      ? AppColors.success
-      : AppConstants.categoryColors[transaction.category] ??
-            AppColors.textSecondary;
+  Color get _color =>
+      _isIncome ? AppColors.success : AppConstants.categoryColors[transaction.category] ?? AppColors.textSecondary;
 
-  IconData get _icon => _isIncome
-      ? Icons.trending_up_rounded
-      : AppConstants.categoryIcons[transaction.category] ?? Icons.more_horiz;
+  IconData get _icon =>
+      _isIncome ? Icons.trending_up_rounded : AppConstants.categoryIcons[transaction.category] ?? Icons.more_horiz;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +54,7 @@ class RecurringItemTile extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: _color.withOpacity(0.12),
+                    color: _color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(_icon, color: _color, size: 22),
@@ -79,21 +76,14 @@ class RecurringItemTile extends StatelessWidget {
                       ),
                       const SizedBox(height: 3),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: _color.withOpacity(0.1),
+                          color: _color.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           frequency,
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: _color,
-                          ),
+                          style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: _color),
                         ),
                       ),
                     ],
@@ -114,10 +104,7 @@ class RecurringItemTile extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         '≈$symbol${monthlyEquivalent.toStringAsFixed(2)}/mo',
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          color: AppColors.textSecondary,
-                        ),
+                        style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary),
                       ),
                     ],
                   ],
