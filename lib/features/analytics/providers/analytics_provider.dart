@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../transactions/models/transaction_model.dart';
 import '../../transactions/providers/transactions_provider.dart';
 
 class CategoryTotal {
@@ -84,4 +85,22 @@ final analyticsTrendProvider = FutureProvider<List<MonthTotal>>((ref) async {
   ref.watch(transactionsProvider);
   final json = await apiClient.get('/analytics/trend') as List<dynamic>;
   return json.map((e) => MonthTotal.fromJson(e as Map<String, dynamic>)).toList();
+});
+
+/// The top 5 expenses for the current calendar month, highest first.
+///
+/// A per-transaction top-N pick, not a server aggregation — the only
+/// client-side sort left in the analytics screen — so it's derived here
+/// from [transactionsProvider] rather than a dedicated endpoint.
+final topExpensesThisMonthProvider = Provider<List<TransactionModel>>((ref) {
+  final transactions = ref.watch(transactionsProvider).value ?? [];
+  final now = DateTime.now();
+  final sorted = transactions
+      .where((t) =>
+          t.type == TransactionType.expense &&
+          t.date.year == now.year &&
+          t.date.month == now.month)
+      .toList()
+    ..sort((a, b) => b.amount.compareTo(a.amount));
+  return sorted.take(5).toList();
 });
