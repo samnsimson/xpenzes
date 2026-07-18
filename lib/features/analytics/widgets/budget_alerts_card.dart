@@ -7,7 +7,11 @@ class BudgetAlertsCard extends StatelessWidget {
   final int budgetCount;
   final int overBudgetCount;
 
-  const BudgetAlertsCard({super.key, required this.budgetCount, required this.overBudgetCount});
+  const BudgetAlertsCard({
+    super.key,
+    required this.budgetCount,
+    required this.overBudgetCount,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +23,8 @@ class BudgetAlertsCard extends StatelessWidget {
       color = AppColors.textSecondary;
       icon = Icons.pie_chart_outline_rounded;
     } else if (overBudgetCount > 0) {
-      status = '$overBudgetCount ${overBudgetCount == 1 ? 'category' : 'categories'} over budget';
+      status =
+          '$overBudgetCount ${overBudgetCount == 1 ? 'category' : 'categories'} over budget';
       color = AppColors.error;
       icon = Icons.warning_amber_rounded;
     } else {
@@ -29,7 +34,10 @@ class BudgetAlertsCard extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BudgetsScreen())),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const BudgetsScreen()),
+      ),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -42,7 +50,10 @@ class BudgetAlertsCard extends StatelessWidget {
             Container(
               width: 44,
               height: 44,
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(14)),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
               child: Icon(icon, color: color, size: 22),
             ),
             const SizedBox(width: 14),
@@ -52,7 +63,11 @@ class BudgetAlertsCard extends StatelessWidget {
                 children: [
                   Text(
                     'Budget Alerts',
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -66,7 +81,11 @@ class BudgetAlertsCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary, size: 20),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.textSecondary,
+              size: 20,
+            ),
           ],
         ),
       ),

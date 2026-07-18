@@ -12,7 +12,8 @@ class ProFeaturesScreen extends StatefulWidget {
   State<ProFeaturesScreen> createState() => _ProFeaturesScreenState();
 }
 
-class _ProFeaturesScreenState extends State<ProFeaturesScreen> with CollapsingSliverAppBarMixin<ProFeaturesScreen> {
+class _ProFeaturesScreenState extends State<ProFeaturesScreen>
+    with CollapsingSliverAppBarMixin<ProFeaturesScreen> {
   @override
   double get collapsedThreshold => 160.0;
 
@@ -37,7 +38,11 @@ class _ProFeaturesScreenState extends State<ProFeaturesScreen> with CollapsingSl
               duration: const Duration(milliseconds: 150),
               child: Text(
                 'Xpenzes Pro',
-                style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
@@ -62,7 +67,11 @@ class _ProFeaturesScreenState extends State<ProFeaturesScreen> with CollapsingSl
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 32),
+                          child: const Icon(
+                            Icons.workspace_premium_rounded,
+                            color: Colors.white,
+                            size: 32,
+                          ),
                         ),
                         const SizedBox(height: 14),
                         Text(
@@ -77,7 +86,10 @@ class _ProFeaturesScreenState extends State<ProFeaturesScreen> with CollapsingSl
                         Text(
                           'Your data, synced securely to the cloud.',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.9), fontSize: 14),
+                          style: GoogleFonts.inter(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     ),
@@ -107,7 +119,9 @@ class _ProFeaturesScreenState extends State<ProFeaturesScreen> with CollapsingSl
                         child: _PlanCard(
                           plan: SubscriptionPlan.monthly,
                           isSelected: _selectedPlan == SubscriptionPlan.monthly,
-                          onTap: () => setState(() => _selectedPlan = SubscriptionPlan.monthly),
+                          onTap: () => setState(
+                            () => _selectedPlan = SubscriptionPlan.monthly,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -115,7 +129,9 @@ class _ProFeaturesScreenState extends State<ProFeaturesScreen> with CollapsingSl
                         child: _PlanCard(
                           plan: SubscriptionPlan.yearly,
                           isSelected: _selectedPlan == SubscriptionPlan.yearly,
-                          onTap: () => setState(() => _selectedPlan = SubscriptionPlan.yearly),
+                          onTap: () => setState(
+                            () => _selectedPlan = SubscriptionPlan.yearly,
+                          ),
                         ),
                       ),
                     ],
@@ -142,11 +158,21 @@ class _ProFeaturesScreenState extends State<ProFeaturesScreen> with CollapsingSl
                               color: AppColors.success.withValues(alpha: 0.12),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.check_rounded, color: AppColors.success, size: 16),
+                            child: const Icon(
+                              Icons.check_rounded,
+                              color: AppColors.success,
+                              size: 16,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: Text(f, style: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary)),
+                            child: Text(
+                              f,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -159,7 +185,9 @@ class _ProFeaturesScreenState extends State<ProFeaturesScreen> with CollapsingSl
                     child: ElevatedButton(
                       onPressed: () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => PaymentScreen(plan: _selectedPlan)),
+                        MaterialPageRoute(
+                          builder: (_) => PaymentScreen(plan: _selectedPlan),
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _gradientColors.last,
@@ -167,7 +195,10 @@ class _ProFeaturesScreenState extends State<ProFeaturesScreen> with CollapsingSl
                       ),
                       child: Text(
                         'Upgrade to Pro',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16),
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
@@ -186,7 +217,11 @@ class _PlanCard extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _PlanCard({required this.plan, required this.isSelected, required this.onTap});
+  const _PlanCard({
+    required this.plan,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +234,10 @@ class _PlanCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primaryLight : AppColors.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isSelected ? AppColors.primary : AppColors.border, width: isSelected ? 2 : 1),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.border,
+            width: isSelected ? 2 : 1,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,19 +246,30 @@ class _PlanCard extends StatelessWidget {
               children: [
                 Text(
                   isYearly ? 'Yearly' : 'Monthly',
-                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 if (isYearly) ...[
                   const SizedBox(width: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 1,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.success.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       SubscriptionConstants.yearlySavingsLabel,
-                      style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.success),
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.success,
+                      ),
                     ),
                   ),
                 ],
@@ -237,7 +286,10 @@ class _PlanCard extends StatelessWidget {
             ),
             Text(
               SubscriptionConstants.periodLabelFor(plan),
-              style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),

@@ -24,20 +24,19 @@ class OnboardingState {
     String? incomeSource,
     String? incomeAmount,
     String? incomeFrequency,
-  }) =>
-      OnboardingState(
-        step: step ?? this.step,
-        currency: currency ?? this.currency,
-        incomeSource: incomeSource ?? this.incomeSource,
-        incomeAmount: incomeAmount ?? this.incomeAmount,
-        incomeFrequency: incomeFrequency ?? this.incomeFrequency,
-      );
+  }) => OnboardingState(
+    step: step ?? this.step,
+    currency: currency ?? this.currency,
+    incomeSource: incomeSource ?? this.incomeSource,
+    incomeAmount: incomeAmount ?? this.incomeAmount,
+    incomeFrequency: incomeFrequency ?? this.incomeFrequency,
+  );
 }
 
 final onboardingProvider =
     NotifierProvider<OnboardingNotifier, OnboardingState>(
-  OnboardingNotifier.new,
-);
+      OnboardingNotifier.new,
+    );
 
 class OnboardingNotifier extends Notifier<OnboardingState> {
   @override
@@ -48,7 +47,8 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   void setCurrency(String v) => state = state.copyWith(currency: v);
   void setIncomeSource(String v) => state = state.copyWith(incomeSource: v);
   void setIncomeAmount(String v) => state = state.copyWith(incomeAmount: v);
-  void setIncomeFrequency(String v) => state = state.copyWith(incomeFrequency: v);
+  void setIncomeFrequency(String v) =>
+      state = state.copyWith(incomeFrequency: v);
   void reset() => state = const OnboardingState();
 
   /// Saves the currency/income collected across the onboarding steps and
@@ -65,7 +65,9 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
 
     final amount = double.tryParse(ob.incomeAmount);
     if (amount != null && amount > 0) {
-      await ref.read(transactionsProvider.notifier).addTransaction(
+      await ref
+          .read(transactionsProvider.notifier)
+          .addTransaction(
             TransactionModel(
               type: TransactionType.income,
               title: ob.incomeSource,

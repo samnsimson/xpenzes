@@ -5,7 +5,11 @@ import '../../../core/theme/app_theme.dart';
 import '../../auth/models/user_model.dart';
 import '../../auth/providers/auth_provider.dart';
 
-void showEditProfileDialog(BuildContext context, WidgetRef ref, UserModel? user) {
+void showEditProfileDialog(
+  BuildContext context,
+  WidgetRef ref,
+  UserModel? user,
+) {
   if (user == null) return;
   final nameCtrl = TextEditingController(text: user.name);
   showDialog(

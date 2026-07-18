@@ -24,18 +24,32 @@ class WelcomePage extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(40),
             ),
-            child: const Icon(Icons.account_balance_wallet_rounded, size: 80, color: AppColors.primary),
+            child: const Icon(
+              Icons.account_balance_wallet_rounded,
+              size: 80,
+              color: AppColors.primary,
+            ),
           ),
           const SizedBox(height: 36),
           Text(
-            userName.isNotEmpty ? 'Hey, ${userName.split(' ').first}!' : 'Welcome!',
-            style: GoogleFonts.plusJakartaSans(fontSize: 32, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+            userName.isNotEmpty
+                ? 'Hey, ${userName.split(' ').first}!'
+                : 'Welcome!',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 32,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
           Text(
             "Let's set up your account in just\na few quick steps.",
-            style: GoogleFonts.inter(fontSize: 16, color: AppColors.textSecondary, height: 1.6),
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              color: AppColors.textSecondary,
+              height: 1.6,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -51,7 +65,11 @@ class WelcomePage extends StatelessWidget {
             label: 'See where your money goes',
           ),
           const SizedBox(height: 12),
-          const _FeatureRow(icon: Icons.lock_rounded, color: AppColors.primary, label: 'All data stays on your device'),
+          const _FeatureRow(
+            icon: Icons.lock_rounded,
+            color: AppColors.primary,
+            label: 'All data stays on your device',
+          ),
         ],
       ),
     );
@@ -63,7 +81,11 @@ class _FeatureRow extends StatelessWidget {
   final Color color;
   final String label;
 
-  const _FeatureRow({required this.icon, required this.color, required this.label});
+  const _FeatureRow({
+    required this.icon,
+    required this.color,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -72,13 +94,20 @@ class _FeatureRow extends StatelessWidget {
         Container(
           width: 40,
           height: 40,
-          decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Icon(icon, color: color, size: 20),
         ),
         const SizedBox(width: 14),
         Text(
           label,
-          style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+          style: GoogleFonts.inter(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textPrimary,
+          ),
         ),
       ],
     );

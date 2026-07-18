@@ -33,7 +33,11 @@ class TypeToggleButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 18, color: isSelected ? color : AppColors.textSecondary),
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? color : AppColors.textSecondary,
+            ),
             const SizedBox(width: 8),
             Text(
               label,

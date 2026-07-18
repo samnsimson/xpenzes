@@ -62,15 +62,15 @@ class TransactionModel {
 
   /// Body for `POST /transactions` — server assigns id/createdAt/group id.
   Map<String, dynamic> toCreateJson() => {
-        'type': type.value,
-        'title': title,
-        'amount': amount,
-        'category': category,
-        'date': date.toIso8601String(),
-        'notes': notes,
-        'is_recurring': isRecurring,
-        'recurrence_frequency': recurrenceFrequency,
-      };
+    'type': type.value,
+    'title': title,
+    'amount': amount,
+    'category': category,
+    'date': date.toIso8601String(),
+    'notes': notes,
+    'is_recurring': isRecurring,
+    'recurrence_frequency': recurrenceFrequency,
+  };
 
   TransactionModel copyWith({
     String? id,
@@ -84,18 +84,17 @@ class TransactionModel {
     String? recurrenceFrequency,
     String? recurringGroupId,
     DateTime? createdAt,
-  }) =>
-      TransactionModel(
-        id: id ?? this.id,
-        type: type ?? this.type,
-        title: title ?? this.title,
-        amount: amount ?? this.amount,
-        category: category ?? this.category,
-        date: date ?? this.date,
-        notes: notes ?? this.notes,
-        isRecurring: isRecurring ?? this.isRecurring,
-        recurrenceFrequency: recurrenceFrequency ?? this.recurrenceFrequency,
-        recurringGroupId: recurringGroupId ?? this.recurringGroupId,
-        createdAt: createdAt ?? this.createdAt,
-      );
+  }) => TransactionModel(
+    id: id ?? this.id,
+    type: type ?? this.type,
+    title: title ?? this.title,
+    amount: amount ?? this.amount,
+    category: category ?? this.category,
+    date: date ?? this.date,
+    notes: notes ?? this.notes,
+    isRecurring: isRecurring ?? this.isRecurring,
+    recurrenceFrequency: recurrenceFrequency ?? this.recurrenceFrequency,
+    recurringGroupId: recurringGroupId ?? this.recurringGroupId,
+    createdAt: createdAt ?? this.createdAt,
+  );
 }

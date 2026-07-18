@@ -82,9 +82,19 @@ class SettingTile extends StatelessWidget {
             ),
           ),
           subtitle: subtitle != null
-              ? Text(subtitle!, style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary))
+              ? Text(
+                  subtitle!,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                )
               : null,
-          trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary.withValues(alpha: 0.5), size: 20),
+          trailing: Icon(
+            Icons.chevron_right_rounded,
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
+            size: 20,
+          ),
         ),
       ),
     );
@@ -132,9 +142,17 @@ class SettingSwitchTile extends StatelessWidget {
           ),
           title: Text(
             title,
-            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+            style: GoogleFonts.inter(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textPrimary,
+            ),
           ),
-          trailing: Switch(value: value, activeThumbColor: AppColors.primary, onChanged: onChanged),
+          trailing: Switch(
+            value: value,
+            activeThumbColor: AppColors.primary,
+            onChanged: onChanged,
+          ),
         ),
       ),
     );

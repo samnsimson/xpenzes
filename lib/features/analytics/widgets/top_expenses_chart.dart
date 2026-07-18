@@ -18,7 +18,10 @@ class TopExpensesChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxAmount = expenses.fold<double>(0, (m, t) => t.amount > m ? t.amount : m);
+    final maxAmount = expenses.fold<double>(
+      0,
+      (m, t) => t.amount > m ? t.amount : m,
+    );
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -62,8 +65,9 @@ class _ExpenseBarRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final color =
         AppConstants.categoryColors[transaction.category] ?? AppColors.primary;
-    final fraction =
-        maxAmount <= 0 ? 0.0 : (transaction.amount / maxAmount).clamp(0.0, 1.0);
+    final fraction = maxAmount <= 0
+        ? 0.0
+        : (transaction.amount / maxAmount).clamp(0.0, 1.0);
 
     return GestureDetector(
       onTap: onTap,

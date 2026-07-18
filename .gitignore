@@ -46,3 +46,6 @@ app.*.map.json
 
 # Claude Code local tooling state
 .claude/
+
+# graphify knowledge-graph artifact (lives at workspace root, not per-repo)
+graphify-out/

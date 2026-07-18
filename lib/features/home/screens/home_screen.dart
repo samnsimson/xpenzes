@@ -55,7 +55,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     final transactions = transactionsAsync.value ?? [];
     final monthTransactions = transactions.where(
-      (t) => t.date.year == _selectedMonth.year && t.date.month == _selectedMonth.month,
+      (t) =>
+          t.date.year == _selectedMonth.year &&
+          t.date.month == _selectedMonth.month,
     );
 
     // Header totals always reflect the true month totals, independent of
@@ -68,7 +70,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         .fold<double>(0, (s, t) => s + t.amount);
     final balance = monthlyIncome - totalExpenses;
 
-    bool isFutureRecurringIncome(TransactionModel t) => t.type == TransactionType.income && t.isRecurring && t.isFuture;
+    bool isFutureRecurringIncome(TransactionModel t) =>
+        t.type == TransactionType.income && t.isRecurring && t.isFuture;
 
     // Only show transactions belonging to the selected month, then apply
     // the user's filter/sort — like a calendar month view, narrowed down.
@@ -97,7 +100,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               duration: const Duration(milliseconds: 150),
               child: Text(
                 'Xpenzes',
-                style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
@@ -141,19 +148,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   const Spacer(),
                   Text(
                     '${filteredTransactions.length} transactions',
-                    style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   if (filter.isActive)
                     TextButton(
-                      onPressed: () => ref.read(transactionFilterProvider.notifier).state =
-                          const TransactionFilter(),
+                      onPressed: () =>
+                          ref.read(transactionFilterProvider.notifier).state =
+                              const TransactionFilter(),
                       style: TextButton.styleFrom(
                         minimumSize: Size.zero,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                       ),
                       child: Text(
                         'Clear',
-                        style: GoogleFonts.inter(fontSize: 13, color: AppColors.error),
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: AppColors.error,
+                        ),
                       ),
                     ),
                   IconButton(
@@ -164,7 +178,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       builder: (_) => const FilterSortSheet(),
                     ),
                     icon: const Icon(Icons.tune_rounded),
-                    color: filter.isActive ? AppColors.primary : AppColors.textSecondary,
+                    color: filter.isActive
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
                     visualDensity: VisualDensity.compact,
                   ),
                 ],
@@ -175,10 +191,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           // Transaction list
           transactionsAsync.when(
             loading: () => const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
             ),
             error: (e, _) => SliverFillRemaining(
-              child: Center(child: Text('Error loading transactions', style: GoogleFonts.inter())),
+              child: Center(
+                child: Text(
+                  'Error loading transactions',
+                  style: GoogleFonts.inter(),
+                ),
+              ),
             ),
             data: (allTransactions) {
               if (allTransactions.isEmpty) {
@@ -190,9 +213,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     child: Text(
                       listTransactions.isEmpty
                           ? 'No transactions in '
-                              '${DateFormat('MMMM yyyy').format(_selectedMonth)}.'
+                                '${DateFormat('MMMM yyyy').format(_selectedMonth)}.'
                           : 'No transactions match your filter.',
-                      style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
                 );
@@ -200,7 +226,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               return HomeTransactionSliverList(
                 grouped: grouped,
                 currencySymbol: symbol,
-                onDeleteTransaction: (t) => ref.read(transactionsProvider.notifier).deleteTransaction(t.id!),
+                onDeleteTransaction: (t) => ref
+                    .read(transactionsProvider.notifier)
+                    .deleteTransaction(t.id!),
               );
             },
           ),

@@ -71,7 +71,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       _isLoading = true;
       _errorMsg = null;
     });
-    final error = await ref.read(authProvider.notifier).sendOtp(_emailCtrl.text.trim(), name: name);
+    final error = await ref
+        .read(authProvider.notifier)
+        .sendOtp(_emailCtrl.text.trim(), name: name);
     if (!mounted) return;
     setState(() {
       _isLoading = false;
@@ -93,7 +95,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       _isLoading = true;
       _errorMsg = null;
     });
-    final error = await ref.read(authProvider.notifier).verifyOtp(_emailCtrl.text.trim(), code);
+    final error = await ref
+        .read(authProvider.notifier)
+        .verifyOtp(_emailCtrl.text.trim(), code);
     if (!mounted) return;
     setState(() {
       _isLoading = false;
@@ -135,7 +139,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white, size: 36),
+                        child: const Icon(
+                          Icons.account_balance_wallet_rounded,
+                          color: Colors.white,
+                          size: 36,
+                        ),
                       ),
                       const SizedBox(height: 20),
                       Text(
@@ -149,11 +157,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       const SizedBox(height: 6),
                       Text(
                         'Track smarter. Spend wiser.',
-                        style: GoogleFonts.inter(fontSize: 15, color: AppColors.textSecondary),
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                       const SizedBox(height: 40),
                       if (_step == _Step.email)
-                        EmailStep(emailCtrl: _emailCtrl, onSubmit: _submitEmail, isLoading: _isLoading)
+                        EmailStep(
+                          emailCtrl: _emailCtrl,
+                          onSubmit: _submitEmail,
+                          isLoading: _isLoading,
+                        )
                       else if (_step == _Step.name)
                         NameStep(
                           nameCtrl: _nameCtrl,
@@ -178,18 +193,33 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       if (_errorMsg != null) ...[
                         const SizedBox(height: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.error.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
+                            border: Border.all(
+                              color: AppColors.error.withValues(alpha: 0.2),
+                            ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 18),
+                              const Icon(
+                                Icons.error_outline_rounded,
+                                color: AppColors.error,
+                                size: 18,
+                              ),
                               const SizedBox(width: 8),
                               Expanded(
-                                child: Text(_errorMsg!, style: GoogleFonts.inter(color: AppColors.error, fontSize: 13)),
+                                child: Text(
+                                  _errorMsg!,
+                                  style: GoogleFonts.inter(
+                                    color: AppColors.error,
+                                    fontSize: 13,
+                                  ),
+                                ),
                               ),
                             ],
                           ),

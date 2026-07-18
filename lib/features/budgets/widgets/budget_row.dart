@@ -25,7 +25,9 @@ class BudgetRow extends StatelessWidget {
     final color = AppConstants.categoryColors[category] ?? AppColors.primary;
     final icon = AppConstants.categoryIcons[category] ?? Icons.more_horiz;
     final hasBudget = budget != null;
-    final progress = hasBudget ? (spent / budget!.monthlyLimit).clamp(0.0, 1.0) : 0.0;
+    final progress = hasBudget
+        ? (spent / budget!.monthlyLimit).clamp(0.0, 1.0)
+        : 0.0;
     final progressColor = !hasBudget
         ? AppColors.textSecondary
         : progress >= 1.0
@@ -88,18 +90,28 @@ class BudgetRow extends StatelessWidget {
                         Text(
                           '$symbol${spent.toStringAsFixed(2)} of '
                           '$symbol${budget!.monthlyLimit.toStringAsFixed(2)}',
-                          style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ] else
                         Text(
                           'No budget set · Tap to add',
-                          style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary, size: 20),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textSecondary,
+                  size: 20,
+                ),
               ],
             ),
           ),

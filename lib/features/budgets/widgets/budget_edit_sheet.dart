@@ -10,7 +10,12 @@ class BudgetEditSheet extends ConsumerStatefulWidget {
   final BudgetModel? existing;
   final String symbol;
 
-  const BudgetEditSheet({super.key, required this.category, required this.existing, required this.symbol});
+  const BudgetEditSheet({
+    super.key,
+    required this.category,
+    required this.existing,
+    required this.symbol,
+  });
 
   @override
   ConsumerState<BudgetEditSheet> createState() => _BudgetEditSheetState();
@@ -42,7 +47,9 @@ class _BudgetEditSheetState extends ConsumerState<BudgetEditSheet> {
     setState(() {
       _amount = value;
       _amountCtrl.text = value.toStringAsFixed(2);
-      _amountCtrl.selection = TextSelection.collapsed(offset: _amountCtrl.text.length);
+      _amountCtrl.selection = TextSelection.collapsed(
+        offset: _amountCtrl.text.length,
+      );
     });
   }
 
@@ -56,7 +63,9 @@ class _BudgetEditSheetState extends ConsumerState<BudgetEditSheet> {
   Future<void> _save() async {
     if (_amount <= 0 || _isSaving) return;
     setState(() => _isSaving = true);
-    await ref.read(budgetsProvider.notifier).setBudget(widget.category, _amount);
+    await ref
+        .read(budgetsProvider.notifier)
+        .setBudget(widget.category, _amount);
     if (mounted) Navigator.pop(context);
   }
 
@@ -89,7 +98,10 @@ class _BudgetEditSheetState extends ConsumerState<BudgetEditSheet> {
                 width: 40,
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
             Text(
@@ -103,12 +115,18 @@ class _BudgetEditSheetState extends ConsumerState<BudgetEditSheet> {
             const SizedBox(height: 24),
             Text(
               'Monthly limit',
-              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _amountCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               onChanged: _onTextChanged,
               decoration: InputDecoration(
                 hintText: '0.00',
@@ -116,7 +134,11 @@ class _BudgetEditSheetState extends ConsumerState<BudgetEditSheet> {
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: Text(
                     widget.symbol,
-                    style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
                 prefixIconConstraints: const BoxConstraints(minWidth: 0),
@@ -141,10 +163,19 @@ class _BudgetEditSheetState extends ConsumerState<BudgetEditSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('${widget.symbol}0', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
+                Text(
+                  '${widget.symbol}0',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 Text(
                   '${widget.symbol}${sliderMax.toStringAsFixed(0)}',
-                  style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -158,7 +189,10 @@ class _BudgetEditSheetState extends ConsumerState<BudgetEditSheet> {
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
                       )
                     : const Text('Save Budget'),
               ),
@@ -169,7 +203,10 @@ class _BudgetEditSheetState extends ConsumerState<BudgetEditSheet> {
                 width: double.infinity,
                 child: TextButton(
                   onPressed: _isSaving ? null : _remove,
-                  child: Text('Remove Budget', style: GoogleFonts.inter(color: AppColors.error)),
+                  child: Text(
+                    'Remove Budget',
+                    style: GoogleFonts.inter(color: AppColors.error),
+                  ),
                 ),
               ),
             ],

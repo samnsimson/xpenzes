@@ -21,7 +21,8 @@ class TransactionDetailSheet extends ConsumerWidget {
     final isIncome = transaction.type == TransactionType.income;
     final color = isIncome
         ? AppColors.success
-        : AppConstants.categoryColors[transaction.category] ?? AppColors.textSecondary;
+        : AppConstants.categoryColors[transaction.category] ??
+              AppColors.textSecondary;
     final icon = isIncome
         ? Icons.trending_up_rounded
         : AppConstants.categoryIcons[transaction.category] ?? Icons.more_horiz;
@@ -42,7 +43,10 @@ class TransactionDetailSheet extends ConsumerWidget {
                 width: 40,
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
             Center(
@@ -80,10 +84,20 @@ class TransactionDetailSheet extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _DetailRow(label: isIncome ? 'Source' : 'Category', value: transaction.category),
-            _DetailRow(label: 'Date', value: DateFormat('EEEE, MMMM d, yyyy').format(transaction.date)),
+            _DetailRow(
+              label: isIncome ? 'Source' : 'Category',
+              value: transaction.category,
+            ),
+            _DetailRow(
+              label: 'Date',
+              value: DateFormat('EEEE, MMMM d, yyyy').format(transaction.date),
+            ),
             _DetailRow(label: 'Type', value: isIncome ? 'Income' : 'Expense'),
-            if (transaction.isRecurring) _DetailRow(label: 'Repeats', value: transaction.recurrenceFrequency ?? '-'),
+            if (transaction.isRecurring)
+              _DetailRow(
+                label: 'Repeats',
+                value: transaction.recurrenceFrequency ?? '-',
+              ),
             if (transaction.notes != null && transaction.notes!.isNotEmpty)
               _DetailRow(label: 'Notes', value: transaction.notes!),
             const SizedBox(height: 24),
@@ -97,7 +111,8 @@ class TransactionDetailSheet extends ConsumerWidget {
                         context: context,
                         isScrollControlled: true,
                         backgroundColor: Colors.transparent,
-                        builder: (_) => AddTransactionSheet(existing: transaction),
+                        builder: (_) =>
+                            AddTransactionSheet(existing: transaction),
                       );
                     },
                     icon: const Icon(Icons.edit_rounded, size: 18),
@@ -106,7 +121,9 @@ class TransactionDetailSheet extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       foregroundColor: AppColors.primary,
                       side: const BorderSide(color: AppColors.border),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ),
@@ -119,8 +136,12 @@ class TransactionDetailSheet extends ConsumerWidget {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       foregroundColor: AppColors.error,
-                      side: BorderSide(color: AppColors.error.withValues(alpha: 0.4)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      side: BorderSide(
+                        color: AppColors.error.withValues(alpha: 0.4),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ),
@@ -137,17 +158,31 @@ class TransactionDetailSheet extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Delete transaction?', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
-        content: Text('This action cannot be undone.', style: GoogleFonts.inter(color: AppColors.textSecondary)),
+        title: Text(
+          'Delete transaction?',
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'This action cannot be undone.',
+          style: GoogleFonts.inter(color: AppColors.textSecondary),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               Navigator.pop(context);
-              ref.read(transactionsProvider.notifier).deleteTransaction(transaction.id!);
+              ref
+                  .read(transactionsProvider.notifier)
+                  .deleteTransaction(transaction.id!);
             },
-            child: Text('Delete', style: GoogleFonts.inter(color: AppColors.error)),
+            child: Text(
+              'Delete',
+              style: GoogleFonts.inter(color: AppColors.error),
+            ),
           ),
         ],
       ),
@@ -172,13 +207,21 @@ class _DetailRow extends StatelessWidget {
             width: 90,
             child: Text(
               label,
-              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondary),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
             ),
           ),
         ],

@@ -61,7 +61,8 @@ class CategoryBreakdownCard extends StatelessWidget {
                 centerSpaceRadius: 32,
                 sections: entries.map((e) {
                   final color =
-                      AppConstants.categoryColors[e.category] ?? AppColors.primary;
+                      AppConstants.categoryColors[e.category] ??
+                      AppColors.primary;
                   return PieChartSectionData(
                     value: e.total,
                     color: color,
@@ -78,7 +79,8 @@ class CategoryBreakdownCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: entries.take(6).map((e) {
                 final color =
-                    AppConstants.categoryColors[e.category] ?? AppColors.primary;
+                    AppConstants.categoryColors[e.category] ??
+                    AppColors.primary;
                 final pct = (e.total / totalExpenses * 100);
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),

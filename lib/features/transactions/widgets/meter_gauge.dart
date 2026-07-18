@@ -31,9 +31,13 @@ class MeterGauge extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
-          color: highlight ? Colors.white.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.1),
+          color: highlight
+              ? Colors.white.withValues(alpha: 0.15)
+              : Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(14),
-          border: highlight ? Border.all(color: Colors.white.withValues(alpha: 0.3)) : null,
+          border: highlight
+              ? Border.all(color: Colors.white.withValues(alpha: 0.3))
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,7 +54,12 @@ class MeterGauge extends StatelessWidget {
                       sectionsSpace: 0,
                       centerSpaceRadius: size / 2 - 7,
                       sections: [
-                        PieChartSectionData(value: percent * 100, color: color, radius: 7, showTitle: false),
+                        PieChartSectionData(
+                          value: percent * 100,
+                          color: color,
+                          radius: 7,
+                          showTitle: false,
+                        ),
                         PieChartSectionData(
                           value: (1 - percent) * 100,
                           color: Colors.white.withValues(alpha: 0.18),
@@ -62,7 +71,11 @@ class MeterGauge extends StatelessWidget {
                   ),
                   Text(
                     '${(percent * 100).round()}%',
-                    style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white),
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),

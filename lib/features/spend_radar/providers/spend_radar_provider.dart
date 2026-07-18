@@ -8,13 +8,17 @@ class RecurringItem {
   final TransactionModel transaction;
   final double monthlyEquivalent;
 
-  const RecurringItem({required this.transaction, required this.monthlyEquivalent});
+  const RecurringItem({
+    required this.transaction,
+    required this.monthlyEquivalent,
+  });
 
   factory RecurringItem.fromJson(Map<String, dynamic> json) => RecurringItem(
-        transaction:
-            TransactionModel.fromJson(json['transaction'] as Map<String, dynamic>),
-        monthlyEquivalent: (json['monthly_equivalent'] as num).toDouble(),
-      );
+    transaction: TransactionModel.fromJson(
+      json['transaction'] as Map<String, dynamic>,
+    ),
+    monthlyEquivalent: (json['monthly_equivalent'] as num).toDouble(),
+  );
 }
 
 class SpendRadarData {
@@ -31,15 +35,15 @@ class SpendRadarData {
   });
 
   factory SpendRadarData.fromJson(Map<String, dynamic> json) => SpendRadarData(
-        recurringExpenses: (json['recurring_expenses'] as List<dynamic>)
-            .map((e) => RecurringItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        recurringIncome: (json['recurring_income'] as List<dynamic>)
-            .map((e) => RecurringItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        totalMonthlyExpense: (json['total_monthly_expense'] as num).toDouble(),
-        totalMonthlyIncome: (json['total_monthly_income'] as num).toDouble(),
-      );
+    recurringExpenses: (json['recurring_expenses'] as List<dynamic>)
+        .map((e) => RecurringItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    recurringIncome: (json['recurring_income'] as List<dynamic>)
+        .map((e) => RecurringItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    totalMonthlyExpense: (json['total_monthly_expense'] as num).toDouble(),
+    totalMonthlyIncome: (json['total_monthly_income'] as num).toDouble(),
+  );
 }
 
 final spendRadarProvider = FutureProvider<SpendRadarData>((ref) async {

@@ -38,7 +38,11 @@ class SummaryCard extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(Icons.radar_rounded, color: Colors.white, size: 22),
+                child: const Icon(
+                  Icons.radar_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
@@ -54,13 +58,20 @@ class SummaryCard extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             '$symbol${totalMonthlyExpense.toStringAsFixed(2)}/mo',
-            style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 34, fontWeight: FontWeight.w800),
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.white,
+              fontSize: 34,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           if (totalMonthlyIncome > 0) ...[
             const SizedBox(height: 8),
             Text(
               'Recurring income: $symbol${totalMonthlyIncome.toStringAsFixed(2)}/mo',
-              style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.85), fontSize: 13),
+              style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.85),
+                fontSize: 13,
+              ),
             ),
           ],
         ],

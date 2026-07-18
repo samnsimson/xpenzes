@@ -24,7 +24,12 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gaugeMax = [monthlyIncome, totalExpenses, balance.abs(), 1.0].reduce((a, b) => a > b ? a : b);
+    final gaugeMax = [
+      monthlyIncome,
+      totalExpenses,
+      balance.abs(),
+      1.0,
+    ].reduce((a, b) => a > b ? a : b);
 
     return Container(
       decoration: const BoxDecoration(
@@ -47,7 +52,10 @@ class HomeHeader extends StatelessWidget {
                     children: [
                       Text(
                         greeting(),
-                        style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.8), fontSize: 14),
+                        style: GoogleFonts.inter(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 14,
+                        ),
                       ),
                       Text(
                         userName.isNotEmpty ? userName : 'there',

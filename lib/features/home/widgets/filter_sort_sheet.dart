@@ -32,8 +32,12 @@ class _FilterSortSheetState extends ConsumerState<FilterSortSheet> {
     _isRecurring = filter.isRecurring;
     _sortBy = filter.sortBy;
     _sortOrder = filter.sortOrder;
-    _minCtrl = TextEditingController(text: filter.minAmount?.toStringAsFixed(2) ?? '');
-    _maxCtrl = TextEditingController(text: filter.maxAmount?.toStringAsFixed(2) ?? '');
+    _minCtrl = TextEditingController(
+      text: filter.minAmount?.toStringAsFixed(2) ?? '',
+    );
+    _maxCtrl = TextEditingController(
+      text: filter.maxAmount?.toStringAsFixed(2) ?? '',
+    );
   }
 
   @override
@@ -69,7 +73,8 @@ class _FilterSortSheetState extends ConsumerState<FilterSortSheet> {
   }
 
   void _reset() {
-    ref.read(transactionFilterProvider.notifier).state = const TransactionFilter();
+    ref.read(transactionFilterProvider.notifier).state =
+        const TransactionFilter();
     Navigator.pop(context);
   }
 
@@ -113,7 +118,13 @@ class _FilterSortSheetState extends ConsumerState<FilterSortSheet> {
             const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(child: _Chip(label: 'All', isSelected: _type == null, onTap: () => _setType(null))),
+                Expanded(
+                  child: _Chip(
+                    label: 'All',
+                    isSelected: _type == null,
+                    onTap: () => _setType(null),
+                  ),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _Chip(
@@ -140,11 +151,13 @@ class _FilterSortSheetState extends ConsumerState<FilterSortSheet> {
                 spacing: 8,
                 runSpacing: 8,
                 children: _type!.categories
-                    .map((c) => _Chip(
-                          label: c,
-                          isSelected: _category == c,
-                          onTap: () => _toggleCategory(c),
-                        ))
+                    .map(
+                      (c) => _Chip(
+                        label: c,
+                        isSelected: _category == c,
+                        onTap: () => _toggleCategory(c),
+                      ),
+                    )
                     .toList(),
               ),
             ],
@@ -156,16 +169,26 @@ class _FilterSortSheetState extends ConsumerState<FilterSortSheet> {
                 Expanded(
                   child: TextField(
                     controller: _minCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(hintText: 'Min', prefixText: symbol),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Min',
+                      prefixText: symbol,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: TextField(
                     controller: _maxCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(hintText: 'Max', prefixText: symbol),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Max',
+                      prefixText: symbol,
+                    ),
                   ),
                 ),
               ],
@@ -186,7 +209,8 @@ class _FilterSortSheetState extends ConsumerState<FilterSortSheet> {
                 Switch(
                   value: _isRecurring ?? false,
                   activeThumbColor: AppColors.primary,
-                  onChanged: (v) => setState(() => _isRecurring = v ? true : null),
+                  onChanged: (v) =>
+                      setState(() => _isRecurring = v ? true : null),
                 ),
               ],
             ),
@@ -197,11 +221,13 @@ class _FilterSortSheetState extends ConsumerState<FilterSortSheet> {
               spacing: 8,
               runSpacing: 8,
               children: TransactionSortField.values
-                  .map((f) => _Chip(
-                        label: _sortFieldLabel(f),
-                        isSelected: _sortBy == f,
-                        onTap: () => setState(() => _sortBy = f),
-                      ))
+                  .map(
+                    (f) => _Chip(
+                      label: _sortFieldLabel(f),
+                      isSelected: _sortBy == f,
+                      onTap: () => setState(() => _sortBy = f),
+                    ),
+                  )
                   .toList(),
             ),
             const SizedBox(height: 18),
@@ -240,7 +266,10 @@ class _FilterSortSheetState extends ConsumerState<FilterSortSheet> {
               width: double.infinity,
               child: TextButton(
                 onPressed: _reset,
-                child: Text('Reset', style: GoogleFonts.inter(color: AppColors.error)),
+                child: Text(
+                  'Reset',
+                  style: GoogleFonts.inter(color: AppColors.error),
+                ),
               ),
             ),
           ],
@@ -250,11 +279,11 @@ class _FilterSortSheetState extends ConsumerState<FilterSortSheet> {
   }
 
   String _sortFieldLabel(TransactionSortField field) => switch (field) {
-        TransactionSortField.date => 'Date',
-        TransactionSortField.amount => 'Amount',
-        TransactionSortField.title => 'Title',
-        TransactionSortField.category => 'Category',
-      };
+    TransactionSortField.date => 'Date',
+    TransactionSortField.amount => 'Amount',
+    TransactionSortField.title => 'Title',
+    TransactionSortField.category => 'Category',
+  };
 }
 
 class _Label extends StatelessWidget {
@@ -279,7 +308,11 @@ class _Chip extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _Chip({required this.label, required this.isSelected, required this.onTap});
+  const _Chip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -292,7 +325,9 @@ class _Chip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary : AppColors.surface,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.border,
+          ),
         ),
         child: Text(
           label,

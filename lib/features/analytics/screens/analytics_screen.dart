@@ -23,7 +23,8 @@ class AnalyticsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transactionsAsync = ref.watch(transactionsProvider);
     final budgetsAsync = ref.watch(budgetsProvider);
-    final summary = ref.watch(analyticsSummaryProvider).value ?? AnalyticsSummary.empty;
+    final summary =
+        ref.watch(analyticsSummaryProvider).value ?? AnalyticsSummary.empty;
     final trend = ref.watch(analyticsTrendProvider).value ?? [];
     final spendRadar = ref.watch(spendRadarProvider).value;
     final symbol = ref.watch(currencySymbolProvider);

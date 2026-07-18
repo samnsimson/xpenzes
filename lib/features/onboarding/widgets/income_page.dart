@@ -18,7 +18,9 @@ class _IncomePageState extends ConsumerState<IncomePage> {
   @override
   void initState() {
     super.initState();
-    _amountCtrl = TextEditingController(text: ref.read(onboardingProvider).incomeAmount);
+    _amountCtrl = TextEditingController(
+      text: ref.read(onboardingProvider).incomeAmount,
+    );
   }
 
   @override
@@ -46,23 +48,38 @@ class _IncomePageState extends ConsumerState<IncomePage> {
               color: AppColors.success.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Icon(Icons.savings_rounded, size: 32, color: AppColors.success),
+            child: const Icon(
+              Icons.savings_rounded,
+              size: 32,
+              color: AppColors.success,
+            ),
           ),
           const SizedBox(height: 24),
           Text(
             'Your income',
-            style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 26,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'You can always update this later from your account.',
-            style: GoogleFonts.inter(fontSize: 15, color: AppColors.textSecondary),
+            style: GoogleFonts.inter(
+              fontSize: 15,
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 28),
           // Income source
           Text(
             'Income source',
-            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 10),
           Wrap(
@@ -74,11 +91,16 @@ class _IncomePageState extends ConsumerState<IncomePage> {
                 onTap: () => notifier.setIncomeSource(s),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected ? AppColors.primary : AppColors.surface,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
+                    border: Border.all(
+                      color: isSelected ? AppColors.primary : AppColors.border,
+                    ),
                   ),
                   child: Text(
                     s,
@@ -96,7 +118,11 @@ class _IncomePageState extends ConsumerState<IncomePage> {
           // Amount
           Text(
             'Monthly amount',
-            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 10),
           TextField(
@@ -109,7 +135,11 @@ class _IncomePageState extends ConsumerState<IncomePage> {
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Text(
                   currency,
-                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
               prefixIconConstraints: const BoxConstraints(minWidth: 0),
@@ -119,7 +149,11 @@ class _IncomePageState extends ConsumerState<IncomePage> {
           // Frequency
           Text(
             'Pay frequency',
-            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 10),
           Wrap(
@@ -131,11 +165,16 @@ class _IncomePageState extends ConsumerState<IncomePage> {
                 onTap: () => notifier.setIncomeFrequency(f),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected ? AppColors.primary : AppColors.surface,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
+                    border: Border.all(
+                      color: isSelected ? AppColors.primary : AppColors.border,
+                    ),
                   ),
                   child: Text(
                     f,

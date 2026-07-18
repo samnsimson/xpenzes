@@ -4,7 +4,9 @@ import '../models/user_model.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/constants/app_constants.dart';
 
-final authProvider = AsyncNotifierProvider<AuthNotifier, UserModel?>(AuthNotifier.new);
+final authProvider = AsyncNotifierProvider<AuthNotifier, UserModel?>(
+  AuthNotifier.new,
+);
 
 /// The current user's currency symbol (e.g. `$`, `€`), falling back to
 /// USD before sign-in or if the stored currency code is unrecognized.
@@ -20,9 +22,14 @@ class OtpProbeResult {
   final _OtpProbeOutcome _outcome;
   final String? errorMessage;
 
-  const OtpProbeResult.existingUser() : _outcome = _OtpProbeOutcome.existingUser, errorMessage = null;
-  const OtpProbeResult.newUser() : _outcome = _OtpProbeOutcome.newUser, errorMessage = null;
-  const OtpProbeResult.error(this.errorMessage) : _outcome = _OtpProbeOutcome.error;
+  const OtpProbeResult.existingUser()
+    : _outcome = _OtpProbeOutcome.existingUser,
+      errorMessage = null;
+  const OtpProbeResult.newUser()
+    : _outcome = _OtpProbeOutcome.newUser,
+      errorMessage = null;
+  const OtpProbeResult.error(this.errorMessage)
+    : _outcome = _OtpProbeOutcome.error;
 
   bool get isExistingUser => _outcome == _OtpProbeOutcome.existingUser;
   bool get isNewUser => _outcome == _OtpProbeOutcome.newUser;
@@ -85,7 +92,10 @@ class AuthNotifier extends AsyncNotifier<UserModel?> {
   /// - Any other failure is a real error (bad email, rate limit, etc).
   Future<OtpProbeResult> probeEmail(String email) async {
     try {
-      await Supabase.instance.client.auth.signInWithOtp(email: email, shouldCreateUser: false);
+      await Supabase.instance.client.auth.signInWithOtp(
+        email: email,
+        shouldCreateUser: false,
+      );
       return const OtpProbeResult.existingUser();
     } on AuthException catch (e) {
       if (e.code == 'otp_disabled') {
@@ -125,7 +135,11 @@ class AuthNotifier extends AsyncNotifier<UserModel?> {
   /// which is also the only case where leaving AuthScreen is correct.
   Future<String?> verifyOtp(String email, String code) async {
     try {
-      await Supabase.instance.client.auth.verifyOTP(type: OtpType.email, email: email, token: code);
+      await Supabase.instance.client.auth.verifyOTP(
+        type: OtpType.email,
+        email: email,
+        token: code,
+      );
     } catch (e) {
       return _friendlyAuthError(e);
     }
@@ -166,12 +180,18 @@ class AuthNotifier extends AsyncNotifier<UserModel?> {
 
   Future<void> updateProfile({String? name, String? currency}) async {
     final json =
-        await apiClient.patch('/users/me', body: {'name': ?name, 'currency': ?currency}) as Map<String, dynamic>;
+        await apiClient.patch(
+              '/users/me',
+              body: {'name': ?name, 'currency': ?currency},
+            )
+            as Map<String, dynamic>;
     state = AsyncData(UserModel.fromJson(json));
   }
 
   Future<void> completeOnboarding() async {
-    final json = await apiClient.post('/users/me/onboarding/complete') as Map<String, dynamic>;
+    final json =
+        await apiClient.post('/users/me/onboarding/complete')
+            as Map<String, dynamic>;
     state = AsyncData(UserModel.fromJson(json));
   }
 

@@ -14,10 +14,10 @@ class BudgetModel {
   });
 
   factory BudgetModel.fromJson(Map<String, dynamic> json) => BudgetModel(
-        id: json['id'] as String,
-        category: json['category'] as String,
-        monthlyLimit: (json['monthly_limit'] as num).toDouble(),
-        spent: (json['spent'] as num).toDouble(),
-        status: json['status'] as String,
-      );
+    id: json['id'] as String,
+    category: json['category'] as String,
+    monthlyLimit: (json['monthly_limit'] as num).toDouble(),
+    spent: (json['spent'] as num).toDouble(),
+    status: json['status'] as String,
+  );
 }

@@ -11,9 +11,9 @@ class CategoryTotal {
   const CategoryTotal({required this.category, required this.total});
 
   factory CategoryTotal.fromJson(Map<String, dynamic> json) => CategoryTotal(
-        category: json['category'] as String,
-        total: (json['total'] as num).toDouble(),
-      );
+    category: json['category'] as String,
+    total: (json['total'] as num).toDouble(),
+  );
 }
 
 class AnalyticsSummary {
@@ -29,7 +29,8 @@ class AnalyticsSummary {
     required this.categoryBreakdown,
   });
 
-  factory AnalyticsSummary.fromJson(Map<String, dynamic> json) => AnalyticsSummary(
+  factory AnalyticsSummary.fromJson(Map<String, dynamic> json) =>
+      AnalyticsSummary(
         totalIncome: (json['total_income'] as num).toDouble(),
         totalExpense: (json['total_expense'] as num).toDouble(),
         net: (json['net'] as num).toDouble(),
@@ -62,11 +63,11 @@ class MonthTotal {
   DateTime get date => DateTime(year, month);
 
   factory MonthTotal.fromJson(Map<String, dynamic> json) => MonthTotal(
-        year: json['year'] as int,
-        month: json['month'] as int,
-        income: (json['income'] as num).toDouble(),
-        expense: (json['expense'] as num).toDouble(),
-      );
+    year: json['year'] as int,
+    month: json['month'] as int,
+    income: (json['income'] as num).toDouble(),
+    expense: (json['expense'] as num).toDouble(),
+  );
 }
 
 final analyticsSummaryProvider = FutureProvider<AnalyticsSummary>((ref) async {
@@ -75,7 +76,8 @@ final analyticsSummaryProvider = FutureProvider<AnalyticsSummary>((ref) async {
   // Re-fetch whenever the transaction list changes, since this is a
   // server-computed aggregate over transactions, not derived locally.
   ref.watch(transactionsProvider);
-  final json = await apiClient.get('/analytics/summary') as Map<String, dynamic>;
+  final json =
+      await apiClient.get('/analytics/summary') as Map<String, dynamic>;
   return AnalyticsSummary.fromJson(json);
 });
 
@@ -84,16 +86,22 @@ final analyticsTrendProvider = FutureProvider<List<MonthTotal>>((ref) async {
   if (user == null) return [];
   ref.watch(transactionsProvider);
   final json = await apiClient.get('/analytics/trend') as List<dynamic>;
-  return json.map((e) => MonthTotal.fromJson(e as Map<String, dynamic>)).toList();
+  return json
+      .map((e) => MonthTotal.fromJson(e as Map<String, dynamic>))
+      .toList();
 });
 
 /// The top 5 expenses for the current calendar month, highest first.
-final topExpensesThisMonthProvider = FutureProvider<List<TransactionModel>>((ref) async {
+final topExpensesThisMonthProvider = FutureProvider<List<TransactionModel>>((
+  ref,
+) async {
   final user = await ref.watch(authProvider.future);
   if (user == null) return [];
   // Re-fetch whenever the transaction list changes, since the top expenses
   // depend on current month transactions.
   ref.watch(transactionsProvider);
   final json = await apiClient.get('/analytics/top-expenses') as List<dynamic>;
-  return json.map((e) => TransactionModel.fromJson(e as Map<String, dynamic>)).toList();
+  return json
+      .map((e) => TransactionModel.fromJson(e as Map<String, dynamic>))
+      .toList();
 });
