@@ -1,0 +1,50 @@
+name: Release artifacts
+
+# Human-gated: runs only on a manual dispatch or when a version tag is pushed —
+# never automatically on every commit. Produces a downloadable release APK; no
+# store submission and no signing secrets required (debug-signed release build).
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xpenzes-app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+
+  # Optional unsigned iOS build — requires a macOS runner. Uncomment to enable.
+  # build-ios:
+  #   runs-on: macos-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set up Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         channel: stable
+  #         cache: true
+  #     - name: Install dependencies
+  #       run: flutter pub get
+  #     - name: Build unsigned iOS
+  #       run: flutter build ios --release --no-codesign
