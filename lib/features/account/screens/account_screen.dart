@@ -5,7 +5,7 @@ import '../../auth/models/user_model.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../transactions/providers/transactions_provider.dart';
 import '../../transactions/models/transaction_model.dart';
-import '../../transactions/widgets/add_transaction_sheet.dart';
+import '../../transactions/screens/add_transaction_screen.dart';
 import '../../budgets/screens/budgets_screen.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/settings_tiles.dart';
@@ -112,21 +112,22 @@ class AccountScreen extends ConsumerWidget {
   }
 
   void _addIncomeSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) =>
-          const AddTransactionSheet(initialType: TransactionType.income),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const AddTransactionScreen(
+          initialType: TransactionType.income,
+        ),
+      ),
     );
   }
 
   void _editIncomeSheet(BuildContext context, TransactionModel income) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => AddTransactionSheet(existing: income),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AddTransactionScreen(existing: income),
+      ),
     );
   }
 }

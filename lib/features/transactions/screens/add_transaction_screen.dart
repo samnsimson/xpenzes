@@ -8,24 +8,24 @@ import '../../../core/utils/validators.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/transaction_model.dart';
 import '../providers/transactions_provider.dart';
-import 'type_toggle_button.dart';
+import '../widgets/type_toggle_button.dart';
 
-class AddTransactionSheet extends ConsumerStatefulWidget {
+class AddTransactionScreen extends ConsumerStatefulWidget {
   final TransactionModel? existing;
   final TransactionType initialType;
 
-  const AddTransactionSheet({
+  const AddTransactionScreen({
     super.key,
     this.existing,
     this.initialType = TransactionType.expense,
   });
 
   @override
-  ConsumerState<AddTransactionSheet> createState() =>
-      _AddTransactionSheetState();
+  ConsumerState<AddTransactionScreen> createState() =>
+      _AddTransactionScreenState();
 }
 
-class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
+class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   late final _titleCtrl = TextEditingController(text: widget.existing?.title);
   late final _amountCtrl = TextEditingController(
     text: widget.existing != null
@@ -134,40 +134,32 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   @override
   Widget build(BuildContext context) {
     final symbol = ref.watch(currencySymbolProvider);
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final categories = _type.categories;
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text(
+          _isEditing ? 'Edit Transaction' : 'Add Transaction',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: AppColors.surface,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      padding: EdgeInsets.fromLTRB(24, 8, 24, 24 + bottomInset),
-      child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: AppColors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            Text(
-              _isEditing ? 'Edit Transaction' : 'Add Transaction',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 20),
             // Type toggle
             Row(
               children: [

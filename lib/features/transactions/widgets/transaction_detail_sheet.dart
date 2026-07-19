@@ -7,7 +7,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/transaction_model.dart';
 import '../providers/transactions_provider.dart';
-import 'add_transaction_sheet.dart';
+import '../screens/add_transaction_screen.dart';
 
 class TransactionDetailSheet extends ConsumerWidget {
   final TransactionModel transaction;
@@ -107,12 +107,13 @@ class TransactionDetailSheet extends ConsumerWidget {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       Navigator.pop(context);
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) =>
-                            AddTransactionSheet(existing: transaction),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AddTransactionScreen(
+                            existing: transaction,
+                          ),
+                        ),
                       );
                     },
                     icon: const Icon(Icons.edit_rounded, size: 18),

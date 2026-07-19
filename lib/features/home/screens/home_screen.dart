@@ -9,7 +9,7 @@ import '../../transactions/providers/transactions_provider.dart';
 import '../../transactions/providers/transaction_filter_provider.dart';
 import '../../transactions/models/transaction_filter.dart';
 import '../../transactions/models/transaction_model.dart';
-import '../../transactions/widgets/add_transaction_sheet.dart';
+import '../../transactions/screens/add_transaction_screen.dart';
 import '../widgets/filter_sort_sheet.dart';
 import '../widgets/home_empty_state.dart';
 import '../widgets/home_meter_row.dart';
@@ -238,11 +238,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (_) => const AddTransactionSheet(),
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AddTransactionScreen()),
         ),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
