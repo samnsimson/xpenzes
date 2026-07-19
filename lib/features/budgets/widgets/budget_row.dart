@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
 import '../models/budget_model.dart';
+import 'budget_pace_hint.dart';
 
 class BudgetRow extends StatelessWidget {
   final String category;
@@ -95,6 +96,8 @@ class BudgetRow extends StatelessWidget {
                             color: AppColors.textSecondary,
                           ),
                         ),
+                        const SizedBox(height: 4),
+                        BudgetPaceHint(budget: budget!, symbol: symbol),
                       ] else
                         Text(
                           'No budget set · Tap to add',
