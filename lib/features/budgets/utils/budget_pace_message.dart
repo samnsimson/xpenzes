@@ -47,7 +47,7 @@ class BudgetPaceMessage {
 
   static String _underPace(BudgetModel budget) {
     return "You're comfortably under budget on ${budget.category}, "
-        '${BudgetPaceMessage._daysLeft(budget)} left.';
+        '${BudgetPaceMessage._daysLeft(budget)}.';
   }
 
   static int _spentPercent(BudgetModel budget) {
